@@ -990,20 +990,32 @@ function populateAkun(){
 function populateUnit(){['inp-unit','f-unit'].forEach(id=>{const s=document.getElementById(id);if(!s)return;s.innerHTML=id==='f-unit'?'<option value="">Semua Unit</option>':'<option value="">-- Pilih Unit --</option>';(DB.units||[]).forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;s.appendChild(o);});});}
 function populateBulan(){const s=document.getElementById('f-bln');const cur=s.value;s.innerHTML='<option value="">Semua Bulan</option>';BULAN.forEach((b,i)=>{const v=(DB.p.tahun||2026)+'-'+String(i+1).padStart(2,'0');const o=document.createElement('option');o.value=v;o.textContent=b+' '+(DB.p.tahun||2026);s.appendChild(o);});s.value=cur;}
 function generateNoBukti(jenis){
-  var tahun=DB.p.tahun||2026;
+  var now=new Date();
+  var tahun=DB.p.tahun||now.getFullYear();
+  var bulan=now.getMonth()+1;
+  var bulanStr=(bulan<10?'0':'')+bulan;
   var prefix=jenis==='masuk'?'BKM':jenis==='keluar'?'BKK':'BMG';
+  // Format: BKM-001/01/2026 — reset tiap bulan
+  var pattern=prefix+'-';
   var txArr=getTxArr();
-  // Cari nomor terakhir dengan prefix yang sama tahun ini
   var nums=txArr
     .filter(function(t){
-      return t.bukti && t.bukti.startsWith(prefix+'/'+tahun+'/');
+      if(!t.bukti) return false;
+      // Cek prefix dan bulan/tahun sama
+      var parts=t.bukti.split('/');
+      if(parts.length<3) return false;
+      return t.bukti.startsWith(pattern) &&
+             parts[1]===bulanStr &&
+             parts[2]===(tahun+'');
     })
     .map(function(t){
-      var parts=t.bukti.split('/');
-      return parseInt(parts[2])||0;
+      var dash=t.bukti.indexOf('-');
+      var slash=t.bukti.indexOf('/');
+      return parseInt(t.bukti.substring(dash+1,slash))||0;
     });
   var next=(nums.length>0?Math.max.apply(null,nums):0)+1;
-  return prefix+'/'+tahun+'/'+(next<10?'00':next<100?'0':'')+next;
+  var nStr=(next<10?'00':next<100?'0':'')+next;
+  return prefix+'-'+nStr+'/'+bulanStr+'/'+tahun;
 }
 
 async function simpanTx(){
@@ -2885,11 +2897,7 @@ if(document.readyState==='loading'){
         <div class="page-hdr">
           <div class="page-hdr-row">
             <div><h2>Dashboard</h2><p id="tgl-now2">Ringkasan keuangan tahun berjalan</p></div>
-            <div class="btn-group" style="flex-wrap:wrap">
-              <button class="btn be bsm" onclick="exportBackup()" title="Download backup data"><i class="ti ti-download"></i> <span class="hide-mobile">Backup</span></button>
-              <button class="btn bg2b bsm" onclick="document.getElementById('import-file').click()" title="Restore dari backup"><i class="ti ti-upload"></i> <span class="hide-mobile">Restore</span></button>
-              <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBackup(this)">
-            </div>
+
           </div>
         </div>
         <div id="manager-info" style="display:none" class="alert ai" style="margin-bottom:12px"><i class="ti ti-shield-check"></i> Anda login sebagai <strong>Manager</strong> — akses baca laporan &amp; kas harian (read-only). Hubungi Admin untuk input atau hapus transaksi.</div>
@@ -2998,6 +3006,41 @@ if(document.readyState==='loading'){
         <div id="calk-content"></div>
       </div>
       <!-- REKAP -->
+      <!-- BUKU BESAR -->
+      <div class="pg" id="pg-bukubesar">
+        <div class="page-hdr">
+          <div class="page-hdr-row">
+            <div><h2>Buku Besar</h2><p>Mutasi per kode akun</p></div>
+            <button class="btn be bsm" onclick="doPrint('bukubesar')"><i class="ti ti-printer"></i> Cetak</button>
+          </div>
+          <div class="frow" style="margin-top:10px;flex-wrap:wrap;gap:8px">
+            <div class="fg" style="min-width:160px"><label>Kode Akun</label>
+              <select id="bb-akun" onchange="renderBukuBesar()"><option value="">Semua Akun</option></select>
+            </div>
+            <div class="fg" style="min-width:120px"><label>Bulan</label>
+              <select id="bb-bln" onchange="renderBukuBesar()"><option value="">Semua</option></select>
+            </div>
+          </div>
+        </div>
+        <div id="bb-content"></div>
+      </div>
+
+      <!-- JURNAL UMUM -->
+      <div class="pg" id="pg-jurnalumum">
+        <div class="page-hdr">
+          <div class="page-hdr-row">
+            <div><h2>Jurnal Umum</h2><p>Rekap semua transaksi berurutan</p></div>
+            <button class="btn be bsm" onclick="doPrint('jurnalumum')"><i class="ti ti-printer"></i> Cetak</button>
+          </div>
+          <div class="frow" style="margin-top:10px;flex-wrap:wrap;gap:8px">
+            <div class="fg" style="min-width:120px"><label>Bulan</label>
+              <select id="ju-bln" onchange="renderJurnalUmum()"><option value="">Semua</option></select>
+            </div>
+          </div>
+        </div>
+        <div id="ju-content"></div>
+      </div>
+
       <div class="pg" id="pg-rekap">
         <div class="page-hdr"><div class="page-hdr-row"><div><h2>Rekapitulasi</h2><p>Ringkasan per bulan dan per unit usaha</p></div><div class="btn-group"><button class="btn bg2b bsm" onclick="doPrint('rekap')"><i class="ti ti-printer"></i> Cetak</button></div></div></div>
         <div id="rekap-content"></div>
@@ -3028,6 +3071,15 @@ if(document.readyState==='loading'){
           <div class="fr"><div class="fg"><label>Nama BUMDes</label><input type="text" id="s-nama"></div><div class="fg"><label>Tahun Buku</label><input type="number" id="s-tahun"></div></div>
           <div class="fr3"><div class="fg"><label>Desa</label><input type="text" id="s-desa"></div><div class="fg"><label>Kecamatan</label><input type="text" id="s-kec"></div><div class="fg"><label>Kabupaten</label><input type="text" id="s-kab"></div></div>
           <div class="fr3"><div class="fg"><label>Direktur</label><input type="text" id="s-dir"></div><div class="fg"><label>Bendahara</label><input type="text" id="s-ben"></div><div class="fg"><label>Kepala Desa</label><input type="text" id="s-kd"></div></div>
+        </div>
+        <div class="card admin-only">
+          <div class="ct"><i class="ti ti-database"></i>Backup &amp; Restore Data</div>
+          <div class="alert ai" style="margin-bottom:12px;font-size:11px"><i class="ti ti-info-circle"></i> Backup rutin setiap bulan untuk keamanan data BUMDes.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn bp bsm" onclick="exportBackup()" style="flex:1;min-width:120px"><i class="ti ti-download"></i> Download Backup</button>
+            <button class="btn be bsm" onclick="document.getElementById('import-file-pg').click()" style="flex:1;min-width:120px"><i class="ti ti-upload"></i> Restore Backup</button>
+            <input type="file" id="import-file-pg" accept=".json" style="display:none" onchange="importBackup(this)">
+          </div>
         </div>
         <div class="card">
           <div class="ct"><i class="ti ti-cash"></i>Saldo &amp; Modal Awal</div>
