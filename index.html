@@ -104,6 +104,7 @@ html,body{font-family:var(--font);font-size:14px;color:var(--ink);background:var
 
 /* ── CARDS ──────────────────────────────── */
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .ct{font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;letter-spacing:-.1px}
 .ct .ti{color:var(--teal2);font-size:16px}
@@ -245,13 +246,14 @@ tr:hover td{background:rgba(14,163,127,.03)}
 .warn-box{background:var(--gold-gl);border:1px solid #ead5a6;border-radius:var(--rs);padding:12px 14px;font-size:12px;color:#7a5a1e;line-height:1.8}
 
 /* ── DASHBOARD CHARTS ────────────────────── */
-.chart-wrap{min-height:130px}
+.chart-wrap{min-height:80px}
 
 /* ══ PRINT STYLES ════════════════════════ */
 @media(max-width:640px){
   .dash-grid{grid-template-columns:1fr!important}
   #dash-charts{grid-template-columns:1fr!important}
   #dash-bottom{grid-template-columns:1fr!important}
+  .main{padding:10px!important}
   .sgrid{grid-template-columns:1fr 1fr!important}
   /* Unit chart mobile */
   #unit-chart{overflow:hidden}
@@ -293,7 +295,7 @@ tr:hover td{background:rgba(14,163,127,.03)}
   /* Layout */
   .sidebar{display:none!important}
   .layout{flex-direction:column}
-  .main{padding:10px;overflow-x:hidden}
+  .main{padding:8px;overflow-x:hidden}
 
   /* Topbar mobile */
   .topbar{padding:0 12px;height:52px;gap:8px}
@@ -305,7 +307,7 @@ tr:hover td{background:rgba(14,163,127,.03)}
   .user-pill{padding:5px 8px}
 
   /* Cards */
-  .card{padding:12px;margin-bottom:10px}
+  .card{padding:12px 10px;margin-bottom:10px}
   .ct{font-size:12px}
 
   /* Grids → single col (KECUALI form-kas tetap 2 kolom) */
@@ -2685,11 +2687,11 @@ if(document.readyState==='loading'){
         <div id="manager-info" style="display:none" class="alert ai" style="margin-bottom:12px"><i class="ti ti-shield-check"></i> Anda login sebagai <strong>Manager</strong> — akses baca laporan &amp; kas harian (read-only). Hubungi Admin untuk input atau hapus transaksi.</div>
         <div id="dash-alerts"></div>
         <div class="sgrid" id="stat-grid"></div>
-        <div id="dash-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" class="dash-grid">
+        <div id="dash-charts" class="dash-grid">
           <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Pendapatan per Unit Usaha</div><div class="chart-wrap" id="unit-chart"></div></div>
           <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Trend 6 Bulan Terakhir</div><div class="chart-wrap" id="bulan-chart"></div></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="dash-bottom" class="dash-grid">
+        <div id="dash-bottom" class="dash-grid">
           <div class="card"><div class="ct"><i class="ti ti-history"></i>5 Transaksi Terakhir</div><div id="recent-tx"></div></div>
           <div class="card"><div class="ct"><i class="ti ti-target"></i>Performa Bulan Ini vs Bulan Lalu</div><div id="dash-compare"></div></div>
         </div>
