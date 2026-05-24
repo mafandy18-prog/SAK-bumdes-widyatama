@@ -1160,17 +1160,16 @@ function renderDashboard(){
     return{l:a.n.replace('Penerimaan ','').replace('Unit ',''),v:L.pU[a.k]||0,c:colorList[i%colorList.length]};
   });
   var maxU=Math.max.apply(null,units.map(function(u){return u.v;}).concat([1]));
-  var unitHtml='<div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">';
+  var unitHtml='<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">';
   units.forEach(function(u){
     var pct2=u.v>0?Math.round(u.v/maxU*100):0;
-    unitHtml+='<div style="min-width:0">'
-      // Baris nama + nilai - nama ellipsis, nilai wrap ke bawah jika perlu
-      +'<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px;gap:8px">'
-      +'<span style="font-size:12.5px;font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1">'+u.l+'</span>'
-      +'<span style="font-size:11px;font-weight:700;color:'+u.c+';white-space:nowrap;font-family:monospace;flex-shrink:0">'+(u.v>0?fmt(u.v):'Rp 0')+'</span>'
+    // Layout: nama di atas, progress bar, nilai di bawah kanan
+    unitHtml+='<div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      +'<span style="font-size:12px;font-weight:600;color:#374151">'+u.l+'</span>'
+      +'<span style="font-size:11.5px;font-weight:700;color:'+u.c+';font-family:monospace">'+(u.v>0?fmt(u.v):'–')+'</span>'
       +'</div>'
-      // Progress bar
-      +'<div style="height:6px;background:#E5E8ED;border-radius:10px;overflow:hidden;width:100%">'
+      +'<div style="height:7px;background:#E5E8ED;border-radius:10px">'
       +'<div style="height:100%;width:'+pct2+'%;background:'+u.c+';border-radius:10px"></div>'
       +'</div>'
       +'</div>';
@@ -1235,7 +1234,7 @@ function renderDashboard(){
       {lbl:'Laba/(Rugi)',ini:LIni.laba,lalu:LLalu.laba},
     ];
     var cmpHtml='<div style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;width:100%;max-width:100%">'
-      +'<table style="width:100%;font-size:11.5px;min-width:260px">'
+      +'<table style="width:100%;font-size:11px;border-collapse:collapse">'
       +'<thead><tr>'
       +'<th style="text-align:left;padding:7px 8px;color:#6B7280;font-weight:600;font-size:11px;white-space:nowrap">Item</th>'
       +'<th style="text-align:right;padding:7px 8px;color:#6B7280;font-weight:600;font-size:11px;white-space:nowrap">'+bLaluLabel+'</th>'
@@ -1267,17 +1266,15 @@ function renderDashboard(){
         +'<i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:8px"></i>Belum ada transaksi</div>';
     } else {
       var rtxHtml='<div style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;width:100%;max-width:100%">'
-        +'<table style="width:100%;font-size:11.5px;min-width:320px"><thead><tr>'
-        +'<th>Tanggal</th><th>Keterangan</th><th>Unit</th>'
-        +'<th style="text-align:right">Masuk</th><th style="text-align:right">Keluar</th>'
+        +'<table style="width:100%;font-size:11px;border-collapse:collapse"><thead><tr>'
+        +'<th style="white-space:nowrap">Tgl</th><th>Keterangan</th><th>Unit</th><th style="text-align:right">Nominal</th>'
         +'</tr></thead><tbody>';
       last5.forEach(function(t){
         rtxHtml+='<tr style="border-top:1px solid var(--border)">'
-          +'<td style="padding:7px 6px;color:var(--ink3);white-space:nowrap;font-size:11px">'+t.tgl+'</td>'
-          +'<td style="padding:7px 6px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.ket+'</td>'
-          +'<td style="padding:7px 6px"><span class="badge bu" style="font-size:9px;white-space:nowrap">'+t.unit+'</span></td>'
-          +'<td style="padding:7px 6px;text-align:right;font-family:var(--mono);color:var(--teal);font-weight:600;white-space:nowrap">'+(t.masuk?fmt(t.masuk):'–')+'</td>'
-          +'<td style="padding:7px 6px;text-align:right;font-family:var(--mono);color:var(--red);font-weight:600;white-space:nowrap">'+(t.keluar?fmt(t.keluar):'–')+'</td>'
+          +'<td style="padding:6px 4px;color:#6B7280;white-space:nowrap;font-size:10px">'+t.tgl.substring(5)+'</td>'
+          +'<td style="padding:6px 4px;font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.ket+'</td>'
+          +'<td style="padding:6px 4px"><span style="background:#E8F4FD;color:#1A5C9A;font-size:9px;padding:2px 6px;border-radius:20px;white-space:nowrap">'+t.unit+'</span></td>'
+          +'<td style="padding:6px 4px;text-align:right;font-family:monospace;font-weight:700;white-space:nowrap;color:'+(t.masuk?'#0E7C65':'#C0392B')+'">'+(t.masuk?'+'+fmt(t.masuk):'-'+fmt(t.keluar))+'</td>'
           +'</tr>';
       });
       rtxHtml+='</tbody></table></div>';
