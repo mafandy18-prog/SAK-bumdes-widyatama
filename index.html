@@ -873,7 +873,7 @@ function mobGo(id){
     curPage=id;
     ({dashboard:renderDashboard,kas:renderKas,neraca:renderNeraca,labarugi:renderLR,
       arukas:renderAK,ekuitas:renderEkuitas,hasilus:renderHasilUsaha,
-      calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,bukubesar:renderBukuBesar,jurnalumum:renderJurnalUmum,pengaturan:renderPengaturan})[id]?.();
+      calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,bukubesar:renderBukuBesar,jurnalumum:renderJurnalUmum,arsip:renderArsip,pengaturan:renderPengaturan})[id]?.();
     found=true;
   }});
   syncMobNav(id);
@@ -952,7 +952,7 @@ function goPage(id,el){
   if(CURRENT_ROLE!=='admin'&&id==='pengaturan'){alert('Akses ditolak. Fitur ini hanya untuk Admin.');return;}
   ({dashboard:renderDashboard,kas:renderKas,neraca:renderNeraca,labarugi:renderLR,
     arukas:renderAK,ekuitas:renderEkuitas,hasilus:renderHasilUsaha,
-    calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,bukubesar:renderBukuBesar,jurnalumum:renderJurnalUmum,pengaturan:renderPengaturan})[id]?.();
+    calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,bukubesar:renderBukuBesar,jurnalumum:renderJurnalUmum,arsip:renderArsip,pengaturan:renderPengaturan})[id]?.();
 }
 function refreshCurrentPage(){
   populateAkun();populateUnit();
@@ -989,6 +989,95 @@ function populateAkun(){
 }
 function populateUnit(){['inp-unit','f-unit'].forEach(id=>{const s=document.getElementById(id);if(!s)return;s.innerHTML=id==='f-unit'?'<option value="">Semua Unit</option>':'<option value="">-- Pilih Unit --</option>';(DB.units||[]).forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;s.appendChild(o);});});}
 function populateBulan(){const s=document.getElementById('f-bln');const cur=s.value;s.innerHTML='<option value="">Semua Bulan</option>';BULAN.forEach((b,i)=>{const v=(DB.p.tahun||2026)+'-'+String(i+1).padStart(2,'0');const o=document.createElement('option');o.value=v;o.textContent=b+' '+(DB.p.tahun||2026);s.appendChild(o);});s.value=cur;}
+function cetakKwitansi(txId){
+  var t=DB.tx[txId];
+  if(!t||!t.keluar){alert('Transaksi tidak ditemukan atau bukan kas keluar.');return;}
+  var p=DB.p;
+  var a=getA(t.akun);
+  var terbilang=function(n){
+    var s=['','Satu','Dua','Tiga','Empat','Lima','Enam','Tujuh','Delapan','Sembilan','Sepuluh','Sebelas'];
+    if(n<12) return s[n];
+    if(n<20) return s[n-10]+' Belas';
+    if(n<100) return s[Math.floor(n/10)]+' Puluh'+(n%10?' '+s[n%10]:'');
+    if(n<200) return 'Seratus'+(n%100?' '+terbilang(n%100):'');
+    if(n<1000) return s[Math.floor(n/100)]+' Ratus'+(n%100?' '+terbilang(n%100):'');
+    if(n<2000) return 'Seribu'+(n%1000?' '+terbilang(n%1000):'');
+    if(n<1000000) return terbilang(Math.floor(n/1000))+' Ribu'+(n%1000?' '+terbilang(n%1000):'');
+    if(n<1000000000) return terbilang(Math.floor(n/1000000))+' Juta'+(n%1000000?' '+terbilang(n%1000000):'');
+    return terbilang(Math.floor(n/1000000000))+' Miliar'+(n%1000000000?' '+terbilang(n%1000000000):'');
+  };
+  var nilaiTerbilang=terbilang(t.keluar)+' Rupiah';
+
+  var w=window.open('','_blank','width=800,height=900');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Kwitansi '+t.bukti+'</title>'
+    +'<style>'
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:"Times New Roman",serif;font-size:12pt;color:#000;background:#fff}'
+    +'@page{size:A4 portrait;margin:20mm 20mm 20mm 25mm}'
+    +'.page{padding:0}'
+    +'.kop{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:3px solid #000;margin-bottom:16px}'
+    +'.kop-logo{width:70px;height:70px;object-fit:contain;flex-shrink:0}'
+    +'.kop-text{flex:1;text-align:center}'
+    +'.kop-nama{font-size:16pt;font-weight:700;text-transform:uppercase;letter-spacing:1px}'
+    +'.kop-sub{font-size:10pt;margin-top:2px}'
+    +'.kop-alamat{font-size:9pt;color:#333;margin-top:3px}'
+    +'.judul{text-align:center;margin:20px 0 16px}'
+    +'.judul h2{font-size:14pt;font-weight:700;text-transform:uppercase;letter-spacing:2px;border:2px solid #000;display:inline-block;padding:4px 24px}'
+    +'.judul p{font-size:10pt;margin-top:6px}'
+    +'.body-kwitansi{border:1.5px solid #000;border-radius:4px;padding:0;margin-bottom:16px}'
+    +'.bk-row{display:flex;border-bottom:1px solid #ccc;min-height:36px;align-items:stretch}'
+    +'.bk-row:last-child{border-bottom:none}'
+    +'.bk-label{width:160px;flex-shrink:0;padding:8px 12px;font-weight:600;background:#f8f8f8;border-right:1px solid #ccc;display:flex;align-items:center}'
+    +'.bk-sep{width:20px;flex-shrink:0;padding:8px 4px;display:flex;align-items:center;justify-content:center;background:#f8f8f8;border-right:1px solid #ccc}'
+    +'.bk-val{flex:1;padding:8px 12px;display:flex;align-items:center}'
+    +'.nominal-box{background:#fff3cd;border:1.5px solid #d4a017;border-radius:4px;padding:6px 14px;font-size:14pt;font-weight:700;letter-spacing:1px}'
+    +'.terbilang{background:#f0f7ff;border:1px solid #b3d4f0;border-radius:4px;padding:6px 12px;font-style:italic;font-size:10pt;line-height:1.6}'
+    +'.ttd-area{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}'
+    +'.ttd-box{border:1px solid #ccc;border-radius:4px;padding:12px 16px;text-align:center}'
+    +'.ttd-title{font-size:10pt;margin-bottom:70px}'
+    +'.ttd-name{font-size:11pt;font-weight:700;border-top:1.5px solid #000;padding-top:6px;margin-top:4px}'
+    +'.ttd-nip{font-size:9pt;color:#555}'
+    +'.footer-note{margin-top:16px;padding-top:8px;border-top:1px dashed #ccc;font-size:9pt;color:#555;text-align:center}'
+    +'@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}'
+    +'</style></head><body><div class="page">'
+    // KOP SURAT
+    +'<div class="kop">'
+    +(kop?'<img class="kop-logo" src="'+document.querySelector('.kop img')?.src+'" onerror="this.style.display=\'none\'">'
+        +'<div class="kop-text">'
+        +'<div style="font-size:10pt">PEMERINTAH DESA '+((p.desa||'').toUpperCase())+', KECAMATAN '+((p.kec||'').toUpperCase())+', KABUPATEN '+((p.kab||'').toUpperCase())+'</div>'
+        +'<div class="kop-nama">BADAN USAHA MILIK DESA (BUMDes)</div>'
+        +'<div class="kop-nama" style="font-size:18pt">'+((p.nama||'BUMDes').toUpperCase())+'</div>'
+        +'<div class="kop-alamat">Desa '+(p.desa||'')+', Kec. '+(p.kec||'')+', Kab. '+(p.kab||'')+'</div>'
+        +'</div>':'')
+    +'</div>'
+    // JUDUL
+    +'<div class="judul"><h2>Bukti Kas Keluar</h2>'
+    +'<p>No. Dokumen: <strong>'+t.bukti+'</strong></p></div>'
+    // BODY
+    +'<div class="body-kwitansi">'
+    +'<div class="bk-row"><div class="bk-label">Tanggal</div><div class="bk-sep">:</div><div class="bk-val">'+fmtD(t.tgl)+'</div></div>'
+    +'<div class="bk-row"><div class="bk-label">Kode Akun</div><div class="bk-sep">:</div><div class="bk-val"><strong>'+t.akun+'</strong> &nbsp;—&nbsp; '+a.n+'</div></div>'
+    +'<div class="bk-row"><div class="bk-label">Unit Usaha</div><div class="bk-sep">:</div><div class="bk-val">'+t.unit+'</div></div>'
+    +'<div class="bk-row"><div class="bk-label">Keterangan</div><div class="bk-sep">:</div><div class="bk-val" style="font-weight:600">'+t.ket+'</div></div>'
+    +'<div class="bk-row" style="min-height:50px"><div class="bk-label">Jumlah</div><div class="bk-sep">:</div>'
+    +'<div class="bk-val"><span class="nominal-box">'+fmt(t.keluar).replace('\u202f','\u00a0')+',-</span></div></div>'
+    +'<div class="bk-row" style="min-height:44px"><div class="bk-label">Terbilang</div><div class="bk-sep">:</div>'
+    +'<div class="bk-val"><div class="terbilang"><em>'+nilaiTerbilang+'</em></div></div></div>'
+    +'</div>'
+    // TTD
+    +'<div class="ttd-area">'
+    +'<div class="ttd-box"><div class="ttd-title">Mengetahui,<br><strong>Direktur '+p.nama+'</strong></div>'
+    +'<div class="ttd-name">'+p.dir+'</div></div>'
+    +'<div class="ttd-box"><div class="ttd-title">'+p.desa+', '+fmtD(new Date().toISOString().substring(0,10))+'<br>Bendahara</div>'
+    +'<div class="ttd-name">'+p.ben+'</div></div>'
+    +'</div>'
+    +'<div class="footer-note">Dokumen ini dicetak secara otomatis oleh Sistem Akuntansi '+p.nama+' &bull; Arsip Keuangan BUMDes</div>'
+    +'</div></body></html>');
+  w.document.close();
+  setTimeout(function(){w.print();},800);
+}
+
 function generateNoBukti(jenis){
   var now=new Date();
   var tahun=DB.p.tahun||now.getFullYear();
@@ -1036,6 +1125,17 @@ async function simpanTx(){
 function resetForm(){document.getElementById('inp-tgl').value=today();['inp-bukti','inp-dok','inp-akun','inp-unit','inp-ket','inp-masuk','inp-keluar','inp-auto'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 async function hapusTx(id){if(CURRENT_ROLE!=='admin'){alert('Hanya Admin yang dapat menghapus transaksi.');return;}if(!confirm('Hapus transaksi ini?'))return;delete DB.tx[id];await saveToCloud();renderKas();renderDashboard();}
 
+function kasActions(t){
+  var btns='';
+  if(CURRENT_ROLE==='admin'){
+    btns+='<button class="btn bd bsm" onclick="hapusTx('+t.id+')" title="Hapus" style="margin-right:3px"><i class="ti ti-trash"></i></button>';
+  }
+  if(t.keluar>0){
+    btns+='<button class="btn be bsm" onclick="cetakKwitansi('+t.id+')" title="Cetak Kwitansi BKK"><i class="ti ti-receipt"></i></button>';
+  }
+  return btns;
+}
+
 function renderKas(){
   // Update dropdown akun dan unit setiap kali halaman kas dibuka
   populateAkun();
@@ -1054,7 +1154,7 @@ function renderKas(){
   if(!fil.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty"><i class="ti ti-inbox"></i>Belum ada transaksi</div></td></tr>';document.getElementById('kas-footer').textContent='';return;}
   let totM=0,totK=0;
   tbody.innerHTML=fil.map((t,i)=>{totM+=t.masuk;totK+=t.keluar;const a=getA(t.akun);
-    return`<tr><td style="color:var(--ink3);font-size:11px">${i+1}</td><td style="white-space:nowrap;font-size:12px">${fmtD(t.tgl)}</td><td style="font-size:11px;font-family:var(--mono);white-space:nowrap">${t.bukti||'-'}</td><td style="font-size:11px"><span style="font-family:var(--mono);font-weight:600;color:var(--navy)">${t.akun}</span><br><span style="color:var(--ink3);font-size:10px">${a.n}</span></td><td><span class="badge bu">${t.unit}</span></td><td style="font-size:12px">${t.ket}</td><td style="text-align:right;color:var(--teal);font-weight:600;white-space:nowrap;font-family:var(--mono);font-size:11.5px">${t.masuk?fmt(t.masuk):'-'}</td><td style="text-align:right;color:var(--red);font-weight:600;white-space:nowrap;font-family:var(--mono);font-size:11.5px">${t.keluar?fmt(t.keluar):'-'}</td><td style="text-align:right;font-weight:700;white-space:nowrap;font-family:var(--mono);font-size:11.5px">${fmt(t.saldo)}</td><td>${CURRENT_ROLE==='admin'?`<button class="btn bd" onclick="hapusTx(${t.id})" title="Hapus"><i class="ti ti-trash"></i></button>`:''}</td></tr>`;
+    return`<tr><td style="color:var(--ink3);font-size:11px">${i+1}</td><td style="white-space:nowrap;font-size:12px">${fmtD(t.tgl)}</td><td style="font-size:11px;font-family:var(--mono);white-space:nowrap">${t.bukti||'-'}</td><td style="font-size:11px"><span style="font-family:var(--mono);font-weight:600;color:var(--navy)">${t.akun}</span><br><span style="color:var(--ink3);font-size:10px">${a.n}</span></td><td><span class="badge bu">${t.unit}</span></td><td style="font-size:12px">${t.ket}</td><td style="text-align:right;color:var(--teal);font-weight:600;white-space:nowrap;font-family:var(--mono);font-size:11.5px">${t.masuk?fmt(t.masuk):'-'}</td><td style="text-align:right;color:var(--red);font-weight:600;white-space:nowrap;font-family:var(--mono);font-size:11.5px">${t.keluar?fmt(t.keluar):'-'}</td><td style="text-align:right;font-weight:700;white-space:nowrap;font-family:var(--mono);font-size:11.5px">${fmt(t.saldo)}</td><td style="white-space:nowrap">${kasActions(t)}</td></tr>`;
   }).join('');
   document.getElementById('kas-footer').innerHTML=`Total Masuk: <strong style="color:var(--teal)">${fmt(totM)}</strong> &nbsp;&middot;&nbsp; Total Keluar: <strong style="color:var(--red)">${fmt(totK)}</strong> &nbsp;&middot;&nbsp; Saldo Akhir: <strong style="color:var(--navy)">${fmt((DB.p.saldo||0)+totM-totK)}</strong>`;
 }
@@ -2128,7 +2228,9 @@ function renderBukuBesar(){
         +'</tr>';
     }).join('');
 
-    html2+='<div class="card" style="margin-bottom:14px">'
+    // Tambah kop surat hanya di card pertama
+  if(!html2) html2=kop('BUKU BESAR','Tahun '+(DB.p.tahun||2026)+(filterBln?' — Bulan: '+filterBln:'')+(filterAkun?' — Akun: '+filterAkun:''));
+  html2+='<div class="card" style="margin-bottom:14px">'
       +'<div class="ct"><i class="ti ti-book-2"></i>'+kode+' — '+akunInfo.n+'</div>'
       +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
       +'<table style="width:100%;border-collapse:collapse;font-size:11px">'
@@ -2199,7 +2301,8 @@ function renderJurnalUmum(){
       +'</tr>';
   }).join('');
 
-  el.innerHTML='<div class="card">'
+  el.innerHTML=kop('JURNAL UMUM','Tahun '+(DB.p.tahun||2026)+(filterBln?' — Bulan: '+filterBln:''))
+    +'<div class="card">'
     +'<div class="ct"><i class="ti ti-list-details"></i>Jurnal Umum '+(filterBln?'— '+filterBln:'Tahun '+tahun)+' ('+txArr.length+' transaksi)</div>'
     +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
     +'<table style="width:100%;border-collapse:collapse;font-size:11px">'
@@ -2221,6 +2324,117 @@ function renderJurnalUmum(){
     +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-size:11px">'+fmt(totalKeluar)+'</td>'
     +'</tr></tfoot>'
     +'</table></div></div>';
+}
+
+// ======================================================
+// ARSIP TAHUN LALU
+// ======================================================
+function renderArsip(){
+  var el=document.getElementById('arsip-content');
+  var sel=document.getElementById('arsip-tahun');
+  if(!el||!sel) return;
+
+  // Populate dropdown tahun arsip
+  var arsip=DB.arsip||{};
+  var tahunList=Object.keys(arsip).sort(function(a,b){return b-a;});
+
+  if(sel.options.length<=1){
+    sel.innerHTML='<option value="">-- Pilih Tahun --</option>';
+    tahunList.forEach(function(t){
+      var o=document.createElement('option');
+      o.value=t; o.textContent='Tahun '+t;
+      sel.appendChild(o);
+    });
+  }
+
+  var tahunDipilih=sel.value;
+  if(!tahunDipilih){
+    if(!tahunList.length){
+      el.innerHTML='<div class="card"><div style="text-align:center;padding:30px;color:var(--ink3)"><i class="ti ti-archive" style="font-size:40px;display:block;margin-bottom:10px"></i><p>Belum ada arsip. Lakukan Tutup Buku untuk membuat arsip.</p></div></div>';
+    } else {
+      el.innerHTML='<div class="card"><div style="text-align:center;padding:30px;color:var(--ink3)"><i class="ti ti-archive" style="font-size:40px;display:block;margin-bottom:10px"></i><p>Pilih tahun arsip di atas</p></div></div>';
+    }
+    return;
+  }
+
+  var data=arsip[tahunDipilih];
+  if(!data){
+    el.innerHTML='<div class="card"><p style="padding:20px;color:var(--red)">Data arsip tidak ditemukan</p></div>';
+    return;
+  }
+
+  // Simpan DB sementara, ganti dengan data arsip untuk kalkulasi
+  var dbBak=JSON.parse(JSON.stringify(DB));
+  DB.tx=data.tx||{};
+  var r=data.ringkasan||{};
+  var p=DB.p;
+
+  // Kalkulasi dari data arsip
+  var Larsip=calc(null);
+  var asetList=getAsetList();
+  var susut=asetList.reduce(function(s,a){return s+hitungAkumSusut(a,parseInt(tahunDipilih));},0);
+  var bruto=asetList.reduce(function(s,a){return s+(a.nilai||0);},0);
+  var sK=r.saldoAkhir||Math.round((p.saldo||0)+Larsip.tp-Larsip.tb);
+
+  var html2=kop('LAPORAN KEUANGAN ARSIP','Tahun Buku '+tahunDipilih,'ARSIP-'+tahunDipilih);
+
+  // ── RINGKASAN ──
+  html2+='<div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Ringkasan Keuangan Tahun '+tahunDipilih+'</div>'
+    +'<div class="sgrid" style="grid-template-columns:1fr 1fr;gap:10px">'
+    +'<div class="stat"><div class="stat-icon si-teal"><i class="ti ti-trending-up"></i></div><div class="sl">Total Pendapatan</div><div class="sv" style="color:var(--teal)">'+fmt(Larsip.tp)+'</div></div>'
+    +'<div class="stat"><div class="stat-icon si-red"><i class="ti ti-trending-down"></i></div><div class="sl">Total Beban</div><div class="sv" style="color:var(--red)">'+fmt(Larsip.tb)+'</div></div>'
+    +'<div class="stat"><div class="stat-icon si-gold"><i class="ti ti-chart-bar"></i></div><div class="sl">Laba Bersih</div><div class="sv" style="color:var(--gold)">'+fmt(Larsip.laba)+'</div></div>'
+    +'<div class="stat"><div class="stat-icon si-teal"><i class="ti ti-cash"></i></div><div class="sl">Saldo Kas Akhir</div><div class="sv" style="color:var(--teal)">'+fmt(sK)+'</div></div>'
+    +'</div></div>';
+
+  // ── NERACA ──
+  var ekuitas=Math.round((p.modal||0)+(p.ld||0)+Larsip.laba-susut);
+  html2+='<div class="card"><div class="ct"><i class="ti ti-scale"></i>Neraca per 31 Desember '+tahunDipilih+'</div>'
+    +'<div class="lr"><span>Kas dan Setara Kas</span><span>'+fmt(sK)+'</span></div>'
+    +'<div class="lr"><span>Aset Tetap Bruto</span><span>'+fmt(bruto)+'</span></div>'
+    +'<div class="lr"><span>Akumulasi Penyusutan</span><span style="color:var(--red)">('+fmt(susut)+')</span></div>'
+    +'<div class="lr lt ltg"><span>Total Aset</span><span>'+fmt(sK+bruto-susut)+'</span></div>'
+    +'<div class="lr lt ltb"><span>Total Ekuitas</span><span>'+fmt(ekuitas)+'</span></div>'
+    +'</div>';
+
+  // ── LABA RUGI ──
+  html2+='<div class="card"><div class="ct"><i class="ti ti-trending-up"></i>Laba Rugi Tahun '+tahunDipilih+'</div>'
+    +'<div class="lr"><span>Total Pendapatan</span><span style="color:var(--teal)">'+fmt(Larsip.tp)+'</span></div>'
+    +'<div class="lr"><span>Total Beban</span><span style="color:var(--red)">('+fmt(Larsip.tb)+')</span></div>'
+    +'<div class="lr lt ltg"><span>Laba Bersih</span><span>'+fmt(Larsip.laba)+'</span></div>'
+    +'</div>';
+
+  // ── JURNAL ARSIP ──
+  var txArsip=Object.values(data.tx||{}).sort(function(a,b){return a.tgl.localeCompare(b.tgl);});
+  if(txArsip.length){
+    var rowsA=txArsip.map(function(t,i){
+      var a=getA(t.akun);
+      return '<tr>'
+        +'<td style="padding:6px 8px;font-size:10px;color:var(--ink3)">'+(i+1)+'</td>'
+        +'<td style="padding:6px 8px;font-size:11px;white-space:nowrap">'+t.tgl+'</td>'
+        +'<td style="padding:6px 8px;font-size:10px;font-family:var(--mono)">'+t.bukti+'</td>'
+        +'<td style="padding:6px 8px;font-size:11px">'+a.n+'</td>'
+        +'<td style="padding:6px 8px;font-size:11px">'+t.ket+'</td>'
+        +'<td style="padding:6px 8px;text-align:right;font-family:var(--mono);color:var(--teal);font-size:11px">'+(t.masuk?fmt(t.masuk):'–')+'</td>'
+        +'<td style="padding:6px 8px;text-align:right;font-family:var(--mono);color:var(--red);font-size:11px">'+(t.keluar?fmt(t.keluar):'–')+'</td>'
+        +'</tr>';
+    }).join('');
+    html2+='<div class="card"><div class="ct"><i class="ti ti-list-details"></i>Jurnal Umum Tahun '+tahunDipilih+' ('+txArsip.length+' transaksi)</div>'
+      +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+      +'<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr>'
+      +'<th style="background:var(--navy);color:#fff;padding:6px 8px;text-align:left">#</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:6px 8px;text-align:left;white-space:nowrap">Tanggal</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:6px 8px;text-align:left;white-space:nowrap">No.Bukti</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:6px 8px;text-align:left">Akun</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:6px 8px;text-align:left">Keterangan</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:6px 8px;text-align:right;white-space:nowrap">Masuk</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:6px 8px;text-align:right;white-space:nowrap">Keluar</th>'
+      +'</tr></thead><tbody>'+rowsA+'</tbody></table></div></div>';
+  }
+
+  el.innerHTML=html2;
+  // Restore DB
+  DB=dbBak;
 }
 
 function renderRekap(){
@@ -2885,6 +3099,7 @@ if(document.readyState==='loading'){
       <div class="sidebar-section">Analisis</div>
       <button class="nb" onclick="goPage('rekap',this)"><i class="ti ti-report-analytics"></i>Rekapitulasi</button>
       <button class="nb" onclick="goPage('ikhtisar',this)"><i class="ti ti-chart-dots"></i>Ikhtisar Tahunan<span class="nb-badge">Baru</span></button>
+      <button class="nb" onclick="goPage('arsip',this)"><i class="ti ti-archive"></i>Arsip Tahun Lalu</button>
       <div class="sidebar-divider"></div>
       <button class="nb admin-only" onclick="goPage('pengaturan',this)"><i class="ti ti-settings"></i>Pengaturan</button>
     </nav>
@@ -3061,6 +3276,29 @@ if(document.readyState==='loading'){
         <div id="ikhtisar-content"></div>
       </div>
 
+      <!-- ARSIP TAHUN LALU -->
+      <div class="pg" id="pg-arsip">
+        <div class="page-hdr">
+          <div class="page-hdr-row">
+            <div><h2>Arsip Tahun Lalu</h2><p>Data tahun yang sudah ditutup buku</p></div>
+          </div>
+          <div class="frow" style="margin-top:10px">
+            <div class="fg" style="min-width:120px"><label>Pilih Tahun Arsip</label>
+              <select id="arsip-tahun" onchange="renderArsip()"><option value="">-- Pilih Tahun --</option></select>
+            </div>
+          </div>
+        </div>
+        <div id="arsip-content">
+          <div class="card">
+            <div style="text-align:center;padding:30px;color:var(--ink3)">
+              <i class="ti ti-archive" style="font-size:40px;display:block;margin-bottom:10px"></i>
+              <p>Pilih tahun arsip di atas untuk melihat laporan</p>
+              <p style="font-size:11px;margin-top:6px">Arsip tersedia setelah Tutup Buku dilakukan</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- PENGATURAN -->
       <div class="pg" id="pg-pengaturan">
         <div class="page-hdr"><h2>Pengaturan</h2><p>Konfigurasi identitas BUMDes, saldo awal, aset, dan struktur PHU</p></div>
@@ -3126,6 +3364,7 @@ if(document.readyState==='loading'){
   <button class="mob-more-item" onclick="mobGo('bukubesar')"><i class="ti ti-book"></i>Buku Besar</button>
   <button class="mob-more-item" onclick="mobGo('jurnalumum')"><i class="ti ti-list-details"></i>Jurnal Umum</button>
   <button class="mob-more-item" onclick="mobGo('ikhtisar')"><i class="ti ti-chart-dots"></i>Ikhtisar Tahunan</button>
+  <button class="mob-more-item" onclick="mobGo('arsip')"><i class="ti ti-archive"></i>Arsip Tahun Lalu</button>
   <div style="height:1px;background:var(--border);margin:4px 0"></div>
 </div>
 <nav class="mob-nav" id="mob-nav">
