@@ -98,7 +98,7 @@ html,body{font-family:var(--font);font-size:14px;color:var(--ink);background:var
 .sidebar-divider{height:1px;background:var(--border);margin:8px 10px}
 
 /* ── MAIN CONTENT ───────────────────────── */
-.main{padding:20px;flex:1;overflow-y:auto;min-width:0}
+.main{padding:20px;flex:1;overflow-y:auto;overflow-x:visible;min-width:0}
 .pg{display:none}.pg.active{display:block;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -295,7 +295,7 @@ tr:hover td{background:rgba(14,163,127,.03)}
   /* Layout */
   .sidebar{display:none!important}
   .layout{flex-direction:column}
-  .main{padding:8px;overflow-x:hidden}
+  .main{padding:8px;overflow-x:visible}
 
   /* Topbar mobile */
   .topbar{padding:0 12px;height:52px;gap:8px}
@@ -1168,7 +1168,7 @@ function renderDashboard(){
     unitHtml+='<div style="margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
       +'<span style="font-size:12px;font-weight:600;color:#374151">'+u.l+'</span>'
-      +'<span style="font-size:11.5px;font-weight:700;font-family:monospace;white-space:nowrap;margin-left:8px;color:'+u.c+'">'+(u.v>0?fmt(u.v):'–')+'</span>'
+      +'<span style="font-size:11.5px;font-weight:700;font-family:monospace;white-space:nowrap;margin-left:8px;color:'+u.c+'">'+(u.v>0?fmt(u.v).replace('\u202f',' '):'–')+'</span>'
       +'</div>'
       +'<div style="height:7px;background:#E5E8ED;border-radius:10px">'
       +'<div style="height:100%;width:'+pct2+'%;background:'+u.c+';border-radius:10px"></div>'
@@ -1205,7 +1205,7 @@ function renderDashboard(){
     }
   });
   var bc=document.getElementById('bulan-chart');
-  if(bc) bc.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+  if(bc) bc.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -18px">'
     +'<svg width="'+svgW+'" height="80" viewBox="0 0 '+svgW+' 80" style="display:block">'
     +svgBars
     +'<line x1="'+LEFT+'" y1="'+chartH+'" x2="'+(svgW-5)+'" y2="'+chartH+'" stroke="#E5E8ED" stroke-width="0.5"/>'
@@ -1232,7 +1232,7 @@ function renderDashboard(){
           +'<td style="padding:7px 8px;text-align:right;font-family:monospace;font-weight:700;white-space:nowrap;color:'+(isIn?'#0E7C65':'#C0392B')+'">'+(isIn?'+':'-')+fmt(isIn?t.masuk:t.keluar)+'</td>'
           +'</tr>';
       });
-      rtx.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+      rtx.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -18px;padding:0 0">'
         +'<table style="border-collapse:collapse;font-size:11px"><thead><tr>'
         +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Tgl</th>'
         +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Keterangan</th>'
@@ -1252,7 +1252,7 @@ function renderDashboard(){
       {lbl:'Beban',ini:LIni.tb,lalu:LLalu.tb},
       {lbl:'Laba/(Rugi)',ini:LIni.laba,lalu:LLalu.laba},
     ];
-    var cmpHtml='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+    var cmpHtml='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -18px">'
       +'<table style="border-collapse:collapse;font-size:11px"><thead><tr>'
       +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Item</th>'
       +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:right">'+bLaluLabel+'</th>'
