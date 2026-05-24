@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:sans-serif;background:#f5f5f5;padding:10px}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px}
+.ct{font-weight:700;margin-bottom:12px;color:#0D1B2A;font-size:14px}
+</style>
+</head>
+<body>
+
+<div style="background:#ffeb3b;padding:8px;margin-bottom:10px;font-size:11px;border-radius:8px">
+  Lebar layar: <strong id="w"></strong>px | 
+  Lebar card: <strong id="cw"></strong>px |
+  Lebar unit-chart: <strong id="ucw"></strong>px
+</div>
+
+<div class="card" id="test-card">
+  <div class="ct">Pendapatan per Unit Usaha</div>
+  <div id="unit-chart"></div>
+</div>
+
+<script>
+// Fungsi fmt() PERSIS sama dengan app
+function fmt(n){
+  return 'Rp\u202F'+(n||0).toLocaleString('id-ID');
+}
+
+// Data sama dengan app
+var units = [
+  {l:'WiFi', v:3100000, c:'#0E7C65'},
+  {l:'Fotokopi & ATK', v:140000, c:'#1A5C9A'},
+  {l:'Angkringan', v:0, c:'#C8973A'},
+  {l:'BUMDes Umum', v:2300000, c:'#7D3C98'},
+];
+var maxU = Math.max.apply(null, units.map(function(u){return u.v;}).concat([1]));
+
+// Kode PERSIS SAMA dengan renderDashboard
+var unitHtml='<div style="padding:0">';
+units.forEach(function(u){
+  var pct2=u.v>0?Math.round(u.v/maxU*100):0;
+  var valStr=u.v>0?fmt(u.v):'–';
+  unitHtml+='<div style="margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px">'
+    +'<span style="font-size:12px;font-weight:600;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+u.l+'</span>'
+    +'<span style="font-size:11px;font-weight:700;color:'+u.c+';white-space:nowrap;flex-shrink:0">'+valStr+'</span>'
+    +'</div>'
+    +'<div style="height:7px;background:#E5E8ED;border-radius:10px;overflow:hidden">'
+    +'<div style="height:100%;width:'+pct2+'%;background:'+u.c+';border-radius:10px"></div>'
+    +'</div></div>';
+});
+unitHtml+='</div>';
+document.getElementById('unit-chart').innerHTML=unitHtml;
+
+// Debug ukuran
+window.onload=function(){
+  document.getElementById('w').textContent=window.innerWidth;
+  document.getElementById('cw').textContent=document.getElementById('test-card').offsetWidth;
+  document.getElementById('ucw').textContent=document.getElementById('unit-chart').offsetWidth;
+};
+</script>
+</body>
+</html>
