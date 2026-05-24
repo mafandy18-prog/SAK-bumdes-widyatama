@@ -826,6 +826,12 @@ function doLogin(){
   // Load data dari Firebase dulu, baru render
   setSyncStatus('busy','Memuat data...');
   loadFromCloud().then(function(){
+    // Load password dari DB jika sudah pernah diubah
+    if(DB.p.passwords){
+      if(DB.p.passwords.admin) USERS.admin.pass=DB.p.passwords.admin;
+      if(DB.p.passwords.manager) USERS.manager.pass=DB.p.passwords.manager;
+      if(DB.p.passwords.manager2) USERS.manager2.pass=DB.p.passwords.manager2;
+    }
     renderDashboard();
     populateAkun();
     populateUnit();
@@ -867,7 +873,7 @@ function mobGo(id){
     curPage=id;
     ({dashboard:renderDashboard,kas:renderKas,neraca:renderNeraca,labarugi:renderLR,
       arukas:renderAK,ekuitas:renderEkuitas,hasilus:renderHasilUsaha,
-      calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,pengaturan:renderPengaturan})[id]?.();
+      calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,bukubesar:renderBukuBesar,jurnalumum:renderJurnalUmum,pengaturan:renderPengaturan})[id]?.();
     found=true;
   }});
   syncMobNav(id);
@@ -946,7 +952,7 @@ function goPage(id,el){
   if(CURRENT_ROLE!=='admin'&&id==='pengaturan'){alert('Akses ditolak. Fitur ini hanya untuk Admin.');return;}
   ({dashboard:renderDashboard,kas:renderKas,neraca:renderNeraca,labarugi:renderLR,
     arukas:renderAK,ekuitas:renderEkuitas,hasilus:renderHasilUsaha,
-    calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,pengaturan:renderPengaturan})[id]?.();
+    calk:renderCaLK,rekap:renderRekap,ikhtisar:renderIkhtisar,bukubesar:renderBukuBesar,jurnalumum:renderJurnalUmum,pengaturan:renderPengaturan})[id]?.();
 }
 function refreshCurrentPage(){
   populateAkun();populateUnit();
@@ -959,7 +965,16 @@ function refreshCurrentPage(){
 // ==================================================
 //  FORM KAS
 // ==================================================
-function onAkun(){const a=getA(document.getElementById('inp-akun').value);document.getElementById('inp-auto').value=a.n||'';if(a.u){const su=document.getElementById('inp-unit');if(!su.value)su.value=a.u;}}
+function onAkun(){
+  var a=getA(document.getElementById('inp-akun').value);
+  document.getElementById('inp-auto').value=a.n||'';
+  if(a.u){var su=document.getElementById('inp-unit');if(!su.value)su.value=a.u;}
+  // Auto-generate nomor bukti jika belum diisi
+  var inpBukti=document.getElementById('inp-bukti');
+  if(inpBukti&&!inpBukti.value&&a.k){
+    inpBukti.value=generateNoBukti(a.t);
+  }
+}
 function populateAkun(){
   var s=document.getElementById('inp-akun');
   if(!s)return;
@@ -974,6 +989,23 @@ function populateAkun(){
 }
 function populateUnit(){['inp-unit','f-unit'].forEach(id=>{const s=document.getElementById(id);if(!s)return;s.innerHTML=id==='f-unit'?'<option value="">Semua Unit</option>':'<option value="">-- Pilih Unit --</option>';(DB.units||[]).forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;s.appendChild(o);});});}
 function populateBulan(){const s=document.getElementById('f-bln');const cur=s.value;s.innerHTML='<option value="">Semua Bulan</option>';BULAN.forEach((b,i)=>{const v=(DB.p.tahun||2026)+'-'+String(i+1).padStart(2,'0');const o=document.createElement('option');o.value=v;o.textContent=b+' '+(DB.p.tahun||2026);s.appendChild(o);});s.value=cur;}
+function generateNoBukti(jenis){
+  var tahun=DB.p.tahun||2026;
+  var prefix=jenis==='masuk'?'BKM':jenis==='keluar'?'BKK':'BMG';
+  var txArr=getTxArr();
+  // Cari nomor terakhir dengan prefix yang sama tahun ini
+  var nums=txArr
+    .filter(function(t){
+      return t.bukti && t.bukti.startsWith(prefix+'/'+tahun+'/');
+    })
+    .map(function(t){
+      var parts=t.bukti.split('/');
+      return parseInt(parts[2])||0;
+    });
+  var next=(nums.length>0?Math.max.apply(null,nums):0)+1;
+  return prefix+'/'+tahun+'/'+(next<10?'00':next<100?'0':'')+next;
+}
+
 async function simpanTx(){
   if(CURRENT_ROLE!=='admin'){alert('Hanya Admin yang dapat menambah transaksi.');return;}
   const tgl=document.getElementById('inp-tgl').value,akun=document.getElementById('inp-akun').value,unit=document.getElementById('inp-unit').value,ket=document.getElementById('inp-ket').value.trim();
@@ -2017,6 +2049,168 @@ function exportMusdes(){
 // ==================================================
 //  REKAPITULASI
 // ==================================================
+// ======================================================
+// BUKU BESAR
+// ======================================================
+function renderBukuBesar(){
+  var p=DB.p, tahun=p.tahun||2026;
+  var el=document.getElementById('bb-content');
+  if(!el) return;
+
+  // Populate filter akun
+  var selAkun=document.getElementById('bb-akun');
+  if(selAkun && selAkun.options.length<=1){
+    var akunList=buildAkunList();
+    akunList.forEach(function(a){
+      var o=document.createElement('option');
+      o.value=a.k; o.textContent=a.k+' - '+a.n;
+      selAkun.appendChild(o);
+    });
+  }
+
+  // Populate filter bulan
+  var selBln=document.getElementById('bb-bln');
+  if(selBln && selBln.options.length<=1){
+    BULAN.forEach(function(b,i){
+      var o=document.createElement('option');
+      o.value=tahun+'-'+(i<9?'0':'')+(i+1);
+      o.textContent=b+' '+tahun;
+      selBln.appendChild(o);
+    });
+  }
+
+  var filterAkun=selAkun?selAkun.value:'';
+  var filterBln=selBln?selBln.value:'';
+
+  // Kelompokkan transaksi per akun
+  var txArr=getTxArr();
+  if(filterBln) txArr=txArr.filter(function(t){return t.tgl.startsWith(filterBln);});
+
+  var akunMap={};
+  txArr.forEach(function(t){
+    if(!t.akun) return;
+    if(filterAkun && t.akun!==filterAkun) return;
+    if(!akunMap[t.akun]) akunMap[t.akun]=[];
+    akunMap[t.akun].push(t);
+  });
+
+  if(!Object.keys(akunMap).length){
+    el.innerHTML='<div class="card"><div style="text-align:center;padding:30px;color:var(--ink3)"><i class="ti ti-book" style="font-size:32px;display:block;margin-bottom:8px"></i>Belum ada transaksi'+(filterAkun?' untuk akun ini':'')+'</div></div>';
+    return;
+  }
+
+  var html2='';
+  Object.keys(akunMap).sort().forEach(function(kode){
+    var txs=akunMap[kode];
+    var akunInfo=getA(kode);
+    var saldo=0;
+    var rows=txs.map(function(t){
+      saldo+=t.masuk-t.keluar;
+      return '<tr>'
+        +'<td style="padding:7px 8px;color:var(--ink3);white-space:nowrap;font-size:11px">'+t.tgl+'</td>'
+        +'<td style="padding:7px 8px;font-size:11px">'+t.bukti+'</td>'
+        +'<td style="padding:7px 8px;font-size:11px">'+t.ket+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);color:var(--teal);font-size:11px">'+(t.masuk?fmt(t.masuk):'–')+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);color:var(--red);font-size:11px">'+(t.keluar?fmt(t.keluar):'–')+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-weight:700;font-size:11px;color:'+(saldo>=0?'var(--teal)':'var(--red)')+'">'+fmt(saldo)+'</td>'
+        +'</tr>';
+    }).join('');
+
+    html2+='<div class="card" style="margin-bottom:14px">'
+      +'<div class="ct"><i class="ti ti-book-2"></i>'+kode+' — '+akunInfo.n+'</div>'
+      +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+      +'<table style="width:100%;border-collapse:collapse;font-size:11px">'
+      +'<thead><tr>'
+      +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap">Tanggal</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap">No. Bukti</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left">Keterangan</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:right;white-space:nowrap">Debit (Masuk)</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:right;white-space:nowrap">Kredit (Keluar)</th>'
+      +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:right;white-space:nowrap">Saldo</th>'
+      +'</tr></thead>'
+      +'<tbody>'+rows+'</tbody>'
+      +'<tfoot><tr class="tfoot-row">'
+      +'<td colspan="3" style="padding:7px 8px;font-size:11px">TOTAL ('+txs.length+' transaksi)</td>'
+      +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-size:11px">'+fmt(txs.reduce(function(s,t){return s+t.masuk;},0))+'</td>'
+      +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-size:11px">'+fmt(txs.reduce(function(s,t){return s+t.keluar;},0))+'</td>'
+      +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-weight:700;font-size:11px">'+fmt(saldo)+'</td>'
+      +'</tr></tfoot>'
+      +'</table></div></div>';
+  });
+
+  el.innerHTML=html2;
+}
+
+// ======================================================
+// JURNAL UMUM
+// ======================================================
+function renderJurnalUmum(){
+  var p=DB.p, tahun=p.tahun||2026;
+  var el=document.getElementById('ju-content');
+  if(!el) return;
+
+  // Populate filter bulan
+  var selBln=document.getElementById('ju-bln');
+  if(selBln && selBln.options.length<=1){
+    BULAN.forEach(function(b,i){
+      var o=document.createElement('option');
+      o.value=tahun+'-'+(i<9?'0':'')+(i+1);
+      o.textContent=b+' '+tahun;
+      selBln.appendChild(o);
+    });
+  }
+
+  var filterBln=selBln?selBln.value:'';
+  var txArr=getTxArr();
+  if(filterBln) txArr=txArr.filter(function(t){return t.tgl.startsWith(filterBln);});
+  txArr.sort(function(a,b){return a.tgl.localeCompare(b.tgl);});
+
+  if(!txArr.length){
+    el.innerHTML='<div class="card"><div style="text-align:center;padding:30px;color:var(--ink3)"><i class="ti ti-list-details" style="font-size:32px;display:block;margin-bottom:8px"></i>Belum ada transaksi</div></div>';
+    return;
+  }
+
+  var totalMasuk=0, totalKeluar=0;
+  var rows=txArr.map(function(t,i){
+    totalMasuk+=t.masuk; totalKeluar+=t.keluar;
+    var akunInfo=getA(t.akun);
+    return '<tr>'
+      +'<td style="padding:7px 8px;color:var(--ink3);white-space:nowrap;font-size:11px">'+(i+1)+'</td>'
+      +'<td style="padding:7px 8px;white-space:nowrap;font-size:11px">'+t.tgl+'</td>'
+      +'<td style="padding:7px 8px;white-space:nowrap;font-size:11px;font-family:var(--mono)">'+t.bukti+'</td>'
+      +'<td style="padding:7px 8px;font-size:11px;white-space:nowrap">'+t.akun+'</td>'
+      +'<td style="padding:7px 8px;font-size:11px">'+akunInfo.n+'</td>'
+      +'<td style="padding:7px 8px;font-size:11px">'+t.ket+'</td>'
+      +'<td style="padding:7px 8px;white-space:nowrap;font-size:11px"><span class="badge '+(t.masuk?'bm':'bk')+'">'+t.unit+'</span></td>'
+      +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);color:var(--teal);font-size:11px;white-space:nowrap">'+(t.masuk?fmt(t.masuk):'–')+'</td>'
+      +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);color:var(--red);font-size:11px;white-space:nowrap">'+(t.keluar?fmt(t.keluar):'–')+'</td>'
+      +'</tr>';
+  }).join('');
+
+  el.innerHTML='<div class="card">'
+    +'<div class="ct"><i class="ti ti-list-details"></i>Jurnal Umum '+(filterBln?'— '+filterBln:'Tahun '+tahun)+' ('+txArr.length+' transaksi)</div>'
+    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:11px">'
+    +'<thead><tr>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap">No</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap">Tanggal</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap">No. Bukti</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap">Kode Akun</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left">Nama Akun</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left">Keterangan</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:left;white-space:nowrap">Unit</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:right;white-space:nowrap">Debit</th>'
+    +'<th style="background:var(--navy);color:#fff;padding:7px 8px;text-align:right;white-space:nowrap">Kredit</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr class="tfoot-row">'
+    +'<td colspan="7" style="padding:7px 8px;font-size:11px">TOTAL</td>'
+    +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-size:11px">'+fmt(totalMasuk)+'</td>'
+    +'<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-size:11px">'+fmt(totalKeluar)+'</td>'
+    +'</tr></tfoot>'
+    +'</table></div></div>';
+}
+
 function renderRekap(){
   var p=DB.p;
   var tahun=p.tahun||2026;
@@ -2358,6 +2552,37 @@ function showOnboard(){
     if(s) s.style.display=(i===1?'block':'none');
   }
 }
+function gantiPassword(){
+  if(CURRENT_ROLE!=='admin'){alert('Hanya Admin yang dapat ganti password.');return;}
+  var oldPwd=document.getElementById('pwd-admin-old').value;
+  var newAdmin=document.getElementById('pwd-admin-new').value;
+  var newMgr=document.getElementById('pwd-manager-new').value;
+  var newMgr2=document.getElementById('pwd-manager2-new').value;
+
+  if(!oldPwd){alert('Masukkan password Admin saat ini.');return;}
+  if(oldPwd!==USERS.admin.pass){alert('Password Admin lama salah!');return;}
+  if(newAdmin&&newAdmin.length<6){alert('Password Admin baru minimal 6 karakter.');return;}
+  if(newMgr&&newMgr.length<6){alert('Password Manager baru minimal 6 karakter.');return;}
+  if(newMgr2&&newMgr2.length<6){alert('Password Manager 2 baru minimal 6 karakter.');return;}
+
+  if(newAdmin) USERS.admin.pass=newAdmin;
+  if(newMgr) USERS.manager.pass=newMgr;
+  if(newMgr2) USERS.manager2.pass=newMgr2;
+
+  // Simpan ke DB agar persist
+  if(!DB.p.passwords) DB.p.passwords={};
+  if(newAdmin) DB.p.passwords.admin=newAdmin;
+  if(newMgr) DB.p.passwords.manager=newMgr;
+  if(newMgr2) DB.p.passwords.manager2=newMgr2;
+  saveToCloud();
+
+  // Clear form
+  ['pwd-admin-old','pwd-admin-new','pwd-manager-new','pwd-manager2-new'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  alert('✅ Password berhasil diubah!');
+}
+
 function lewatiOnboard(){
   // Set flag agar tidak muncul lagi
   DB.p.onboarded=true;
@@ -2642,6 +2867,9 @@ if(document.readyState==='loading'){
       <button class="nb" onclick="goPage('ekuitas',this)"><i class="ti ti-chart-pie"></i>Perubahan Ekuitas</button>
       <button class="nb" onclick="goPage('hasilus',this)"><i class="ti ti-award"></i>Pembagian SHU</button>
       <button class="nb" onclick="goPage('calk',this)"><i class="ti ti-notebook"></i>CaLK<span class="nb-badge">Lengkap</span></button>
+      <div class="sidebar-section">Akuntansi</div>
+      <button class="nb" onclick="goPage('bukubesar',this)"><i class="ti ti-book"></i>Buku Besar</button>
+      <button class="nb" onclick="goPage('jurnalumum',this)"><i class="ti ti-list-details"></i>Jurnal Umum</button>
       <div class="sidebar-section">Analisis</div>
       <button class="nb" onclick="goPage('rekap',this)"><i class="ti ti-report-analytics"></i>Rekapitulasi</button>
       <button class="nb" onclick="goPage('ikhtisar',this)"><i class="ti ti-chart-dots"></i>Ikhtisar Tahunan<span class="nb-badge">Baru</span></button>
@@ -2843,6 +3071,8 @@ if(document.readyState==='loading'){
   <button class="mob-more-item" onclick="mobGo('ekuitas')"><i class="ti ti-chart-pie"></i>Perubahan Ekuitas</button>
   <button class="mob-more-item" onclick="mobGo('hasilus')"><i class="ti ti-award"></i>Pembagian SHU</button>
   <button class="mob-more-item" onclick="mobGo('calk')"><i class="ti ti-notebook"></i>CaLK</button>
+  <button class="mob-more-item" onclick="mobGo('bukubesar')"><i class="ti ti-book"></i>Buku Besar</button>
+  <button class="mob-more-item" onclick="mobGo('jurnalumum')"><i class="ti ti-list-details"></i>Jurnal Umum</button>
   <button class="mob-more-item" onclick="mobGo('ikhtisar')"><i class="ti ti-chart-dots"></i>Ikhtisar Tahunan</button>
   <div style="height:1px;background:var(--border);margin:4px 0"></div>
 </div>
