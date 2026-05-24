@@ -250,20 +250,16 @@ tr:hover td{background:rgba(14,163,127,.03)}
 
 /* ══ PRINT STYLES ════════════════════════ */
 @media(max-width:640px){
-  .dash-grid{grid-template-columns:1fr!important}
-  #dash-charts{grid-template-columns:1fr!important}
-  #dash-bottom{grid-template-columns:1fr!important}
-  .main{padding:10px!important}
+  /* Grid 1 kolom di mobile */
+  .dash-grid,#dash-charts,#dash-bottom{grid-template-columns:1fr!important}
   .sgrid{grid-template-columns:1fr 1fr!important}
-  /* Unit chart mobile */
-  #unit-chart{overflow:hidden}
-  #unit-chart .stat-label{max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* Tabel mobile - horizontal scroll dengan touch */
-  .mob-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rs)}
-  .mob-tbl-wrap table{min-width:320px}
-  /* Dashboard page padding */
-  #pg-dashboard .page-hdr{padding-bottom:8px}
-  /* Sembunyikan kolom kurang penting di mobile */
+  /* Main padding */
+  .main{padding:8px!important;overflow-x:visible!important}
+  /* PENTING: unit-chart TIDAK overflow:hidden agar nilai tidak terpotong */
+  #unit-chart{overflow:visible!important}
+  /* Card padding mobile lebih kecil */
+  .card{padding:10px 8px!important}
+  /* Hide on mobile */
   .hide-mobile{display:none!important}
 }
 @media print{
@@ -307,7 +303,7 @@ tr:hover td{background:rgba(14,163,127,.03)}
   .user-pill{padding:5px 8px}
 
   /* Cards */
-  .card{padding:12px 10px;margin-bottom:10px}
+  .card{padding:10px 8px;margin-bottom:10px}
   .ct{font-size:12px}
 
   /* Grids → single col (KECUALI form-kas tetap 2 kolom) */
@@ -1205,7 +1201,7 @@ function renderDashboard(){
     }
   });
   var bc=document.getElementById('bulan-chart');
-  if(bc) bc.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -18px">'
+  if(bc) bc.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">'
     +'<svg width="'+svgW+'" height="80" viewBox="0 0 '+svgW+' 80" style="display:block">'
     +svgBars
     +'<line x1="'+LEFT+'" y1="'+chartH+'" x2="'+(svgW-5)+'" y2="'+chartH+'" stroke="#E5E8ED" stroke-width="0.5"/>'
@@ -1232,7 +1228,7 @@ function renderDashboard(){
           +'<td style="padding:7px 8px;text-align:right;font-family:monospace;font-weight:700;white-space:nowrap;color:'+(isIn?'#0E7C65':'#C0392B')+'">'+(isIn?'+':'-')+fmt(isIn?t.masuk:t.keluar)+'</td>'
           +'</tr>';
       });
-      rtx.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -18px;padding:0 0">'
+      rtx.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">'
         +'<table style="border-collapse:collapse;font-size:11px"><thead><tr>'
         +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Tgl</th>'
         +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Keterangan</th>'
@@ -1252,7 +1248,7 @@ function renderDashboard(){
       {lbl:'Beban',ini:LIni.tb,lalu:LLalu.tb},
       {lbl:'Laba/(Rugi)',ini:LIni.laba,lalu:LLalu.laba},
     ];
-    var cmpHtml='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -18px">'
+    var cmpHtml='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">'
       +'<table style="border-collapse:collapse;font-size:11px"><thead><tr>'
       +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Item</th>'
       +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:right">'+bLaluLabel+'</th>'
@@ -2673,12 +2669,12 @@ if(document.readyState==='loading'){
         <div id="dash-alerts"></div>
         <div class="sgrid" id="stat-grid"></div>
         <div id="dash-charts" class="dash-grid">
-          <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Pendapatan per Unit Usaha</div><div class="chart-wrap" id="unit-chart"></div></div>
-          <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Trend 6 Bulan Terakhir</div><div class="chart-wrap" id="bulan-chart"></div></div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><div class="ct"><i class="ti ti-chart-bar"></i>Pendapatan per Unit Usaha</div><div id="unit-chart"></div></div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)"><div class="ct"><i class="ti ti-chart-bar"></i>Trend 6 Bulan Terakhir</div><div id="bulan-chart"></div></div>
         </div>
         <div id="dash-bottom" class="dash-grid">
-          <div class="card"><div class="ct"><i class="ti ti-history"></i>5 Transaksi Terakhir</div><div id="recent-tx"></div></div>
-          <div class="card"><div class="ct"><i class="ti ti-target"></i>Performa Bulan Ini vs Bulan Lalu</div><div id="dash-compare"></div></div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)"><div class="ct" style="padding:12px 14px"><i class="ti ti-history"></i>5 Transaksi Terakhir</div><div id="recent-tx"></div></div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)"><div class="ct" style="padding:12px 14px"><i class="ti ti-target"></i>Performa Bulan Ini vs Bulan Lalu</div><div id="dash-compare"></div></div>
         </div>
       </div>
 
