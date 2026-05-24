@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;padding:10px}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ct{font-weight:700;margin-bottom:12px;color:#0D1B2A;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- Unit Chart -->
+<div class="card">
+  <div class="ct">&#9685; Pendapatan per Unit Usaha</div>
+  <div id="unit-chart"></div>
+</div>
+
+<!-- Performa -->
+<div class="card" style="padding:14px 0">
+  <div class="ct" style="padding:0 14px">&#9898; Performa Bulan Ini vs Bulan Lalu</div>
+  <div id="dash-compare"></div>
+</div>
+
+<script>
+function fmt(n){
+  return 'Rp\u202F'+(n||0).toLocaleString('id-ID');
+}
+function fmtC(v){
+  if(v===0) return 'Rp 0';
+  if(Math.abs(v)>=1000000) return 'Rp '+(v/1000000).toFixed(1).replace('.',',')+' jt';
+  if(Math.abs(v)>=1000) return 'Rp '+Math.round(v/1000)+'rb';
+  return 'Rp '+v;
+}
+
+// Unit chart
+var units=[
+  {l:'WiFi',v:3100000,c:'#0E7C65'},
+  {l:'Fotokopi & ATK',v:140000,c:'#1A5C9A'},
+  {l:'Angkringan',v:0,c:'#C8973A'},
+  {l:'BUMDes Umum',v:2300000,c:'#7D3C98'},
+];
+var maxU=Math.max.apply(null,units.map(function(u){return u.v;}).concat([1]));
+var unitHtml='<div style="padding:0">';
+units.forEach(function(u){
+  var pct2=u.v>0?Math.round(u.v/maxU*100):0;
+  unitHtml+='<div style="margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px">'
+    +'<span style="font-size:12px;font-weight:600;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+u.l+'</span>'
+    +'<span style="font-size:11px;font-weight:700;color:'+u.c+';white-space:nowrap;flex-shrink:0">'+(u.v>0?fmt(u.v):'–')+'</span>'
+    +'</div>'
+    +'<div style="height:7px;background:#E5E8ED;border-radius:10px;overflow:hidden">'
+    +'<div style="height:100%;width:'+pct2+'%;background:'+u.c+';border-radius:10px"></div>'
+    +'</div></div>';
+});
+unitHtml+='</div>';
+document.getElementById('unit-chart').innerHTML=unitHtml;
+
+// Performa compact
+var rows=[
+  {lbl:'Pendapatan',lalu:2300000,ini:0},
+  {lbl:'Beban',lalu:0,ini:0},
+  {lbl:'Laba/(Rugi)',lalu:2300000,ini:0},
+];
+var tbody='';
+rows.forEach(function(r){
+  var diff=r.ini-r.lalu;
+  var pct=r.lalu!==0?(diff>=0?'+':'')+Math.round(diff/Math.abs(r.lalu)*100)+'%':'–';
+  var color=diff>=0?'#0E7C65':'#C0392B';
+  tbody+='<tr style="border-bottom:1px solid #F3F4F6">'
+    +'<td style="padding:7px 6px;font-size:10.5px;font-weight:600;white-space:nowrap">'+r.lbl+'</td>'
+    +'<td style="padding:7px 6px;text-align:right;font-family:monospace;font-size:10px;color:#9CA3AF;white-space:nowrap">'+fmtC(r.lalu)+'</td>'
+    +'<td style="padding:7px 6px;text-align:right;font-family:monospace;font-size:10px;font-weight:700;white-space:nowrap">'+fmtC(r.ini)+'</td>'
+    +'<td style="padding:7px 6px;text-align:right;font-size:10.5px;font-weight:700;color:'+color+';white-space:nowrap">'+pct+'</td>'
+    +'</tr>';
+});
+document.getElementById('dash-compare').innerHTML=
+  '<table style="width:100%;border-collapse:collapse">'
+  +'<thead><tr style="background:#0D1B2A">'
+  +'<th style="padding:7px 6px;color:#fff;text-align:left;font-size:10px;white-space:nowrap">ITEM</th>'
+  +'<th style="padding:7px 6px;color:#9CA3AF;text-align:right;font-size:10px;white-space:nowrap">APR</th>'
+  +'<th style="padding:7px 6px;color:#fff;text-align:right;font-size:10px;white-space:nowrap">MEI</th>'
+  +'<th style="padding:7px 6px;color:#fff;text-align:right;font-size:10px;white-space:nowrap">TREND</th>'
+  +'</tr></thead><tbody>'+tbody+'</tbody></table>';
+</script>
+</body>
+</html>
