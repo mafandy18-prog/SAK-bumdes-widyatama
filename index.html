@@ -583,7 +583,18 @@ async function loadFromCloud(){
     setSyncStatus('ok','Real-time aktif \u2713');
     return DB;
   } catch(e){
-    setSyncStatus('','Koneksi terputus');
+    // Coba load dari localStorage jika Firebase gagal
+    var localData=loadLocalBackup();
+    if(localData){
+      DB=localData;
+      if(!DB.tx) DB.tx={};
+      if(!DB.units) DB.units=['WiFi','Fotokopi & ATK','Angkringan','BUMDes Umum'];
+      if(!DB.arsip) DB.arsip={};
+      setSyncStatus('','Offline - data lokal');
+      refreshCurrentPage();
+    } else {
+      setSyncStatus('','Koneksi terputus');
+    }
     console.error('loadFromCloud:', e);
   }
 }
@@ -603,8 +614,10 @@ async function saveToCloud(){
       throw new Error('Simpan gagal (' + res.status + '): ' + txt.substring(0,80));
     }
     setSyncStatus('ok','Tersimpan \u2713');
+    saveLocalBackup(); // backup otomatis ke localStorage
   } catch(e){
-    setSyncStatus('','Gagal simpan');
+    setSyncStatus('','Gagal simpan - data disimpan lokal');
+    saveLocalBackup(); // tetap backup lokal meski Firebase gagal
     console.error('saveToCloud:', e);
   }
 }
@@ -803,6 +816,11 @@ function doLogin(){
     renderDashboard();
     populateAkun();
     populateUnit();
+    // Tampilkan onboarding jika belum pernah setup (nama masih default)
+    var isFirstLogin = !localStorage.getItem('bumdes_onboarded');
+    if(isFirstLogin && (!DB.p.nama || DB.p.nama==='BUMDes WIDYATAMA')){
+      showOnboard();
+    }
   });
 }
 function doLogout(){
@@ -1062,48 +1080,172 @@ function ttd(){
 //  DASHBOARD
 // ==================================================
 function renderDashboard(){
-  const L=calc(),p=DB.p,sA=(p.saldo||0)+L.tp-L.tb;
-  const stats=[
-    {icon:'ti-cash',cls:'s-teal',icls:'si-teal',label:'Saldo Kas Akhir',val:fmtS(sA),sub:'Posisi kas berjalan'},
-    {icon:'ti-trending-up',cls:'s-teal',icls:'si-teal',label:'Total Pendapatan',val:fmtS(L.tp),sub:'Tahun '+p.tahun},
-    {icon:'ti-trending-down',cls:'s-red',icls:'si-red',label:'Total Beban',val:fmtS(L.tb),sub:'Tahun '+p.tahun},
-    {icon:'ti-chart-bar',cls:'s-gold',icls:'si-gold',label:'Laba Bersih',val:fmtS(L.laba),sub:L.laba>=0?'Surplus':'Defisit'},
-    {icon:'ti-receipt',cls:'s-blue',icls:'si-blue',label:'Jml Transaksi',val:Object.keys(DB.tx||{}).length,sub:'Entri tercatat'},
-    {icon:'ti-building-community',cls:'s-blue',icls:'si-blue',label:'Modal Desa',val:fmtS(p.modal||0),sub:'Penyertaan kumulatif'},
-  ];
-  document.getElementById('stat-grid').innerHTML=stats.map(s=>`<div class="stat ${s.cls}"><div class="stat-icon ${s.icls}"><i class="ti ${s.icon}"></i></div><div class="sl">${s.label}</div><div class="sv">${s.val}</div><div class="sv-sub">${s.sub}</div></div>`).join('');
+  var L=calc(null), p=DB.p, tahun=p.tahun||2026;
+  var sK=Math.round((p.saldo||0)+L.tp-L.tb);
+  var asetList=getAsetList();
+  var susut=asetList.reduce(function(s,a){return s+hitungAkumSusut(a,tahun);},0);
+  var bruto=asetList.reduce(function(s,a){return s+(a.nilai||0);},0);
+  var totalAset=sK+(bruto-susut);
+  var pct=(p.phu&&p.phu[0]?p.phu[0].p:25);
+  var pades=Math.round(L.laba*(pct/100));
 
-  // Unit chart - dinamis dari buildAkunList
+  // Bulan ini vs bulan lalu
+  var now=new Date();
+  var bIni=tahun+'-'+(now.getMonth()<9?'0':'')+(now.getMonth()+1);
+  var bLalu=now.getMonth()===0?(tahun-1)+'-12':tahun+'-'+(now.getMonth()<10?'0':'')+(now.getMonth());
+  var LIni=calc(bIni), LLalu=calc(bLalu);
+  var trendPend=LLalu.tp>0?Math.round((LIni.tp-LLalu.tp)/LLalu.tp*100):0;
+  var trendLaba=LLalu.laba>0?Math.round((LIni.laba-LLalu.laba)/LLalu.laba*100):0;
+
+  // ── STAT CARDS ──────────────────────────────────────
+  var grid=document.getElementById('stat-grid');
+  if(!grid)return;
+  var stats=[
+    {icon:'ti-trending-up',lbl:'Total Pendapatan',val:fmt(L.tp),cls:'si-teal',color:'var(--teal)',
+     sub:trendPend>=0?'<span style="color:var(--teal)">+'+trendPend+'%</span> vs bulan lalu':'<span style="color:var(--red)">'+trendPend+'%</span> vs bulan lalu'},
+    {icon:'ti-trending-down',lbl:'Total Beban',val:fmt(L.tb),cls:'si-red',color:'var(--red)',
+     sub:'Bulan ini: '+fmt(LIni.tb)},
+    {icon:'ti-chart-bar',lbl:'Laba Bersih',val:fmt(L.laba),cls:'si-gold',color:'var(--gold)',
+     sub:trendLaba>=0?'<span style="color:var(--teal)">+'+trendLaba+'%</span> vs bulan lalu':'<span style="color:var(--red)">'+trendLaba+'%</span> vs bulan lalu'},
+    {icon:'ti-cash',lbl:'Saldo Kas',val:fmt(sK),cls:'si-teal',color:'var(--teal)',
+     sub:sK<500000?'<span style="color:var(--red)">Saldo rendah!</span>':'Kondisi sehat'},
+    {icon:'ti-building-store',lbl:'Total Aset',val:fmt(totalAset),cls:'si-blue',color:'var(--blue)',
+     sub:'Aset tetap bersih: '+fmt(bruto-susut)},
+    {icon:'ti-building-community',lbl:'PADes ke Desa',val:fmt(pades),cls:'si-gold',color:'var(--gold)',
+     sub:pct+'% dari laba bersih'},
+  ];
+  grid.innerHTML=stats.map(function(s){
+    return '<div class="stat">'
+      +'<div class="stat-icon '+s.cls+'"><i class="ti '+s.icon+'"></i></div>'
+      +'<div class="sl">'+s.lbl+'</div>'
+      +'<div class="sv" style="color:'+s.color+'">'+s.val+'</div>'
+      +'<div style="font-size:10px;color:var(--ink3);margin-top:3px">'+s.sub+'</div>'
+      +'</div>';
+  }).join('');
+
+  // ── ALERT SYSTEM ────────────────────────────────────
+  var alerts=[];
+  if(sK<500000) alerts.push({t:'danger',i:'ti-alert-circle',m:'Saldo kas sangat rendah ('+fmt(sK)+'). Segera lakukan pengecekan arus kas.'});
+  if(sK<0) alerts.push({t:'danger',i:'ti-alert-triangle',m:'SALDO KAS NEGATIF! Data perlu diperiksa kembali.'});
+  if(L.laba<0) alerts.push({t:'warning',i:'ti-trending-down',m:'BUMDes mengalami rugi bersih tahun ini sebesar '+fmt(Math.abs(L.laba))+'.'});
+  var txArr=getTxArr();
+  if(txArr.length===0) alerts.push({t:'info',i:'ti-info-circle',m:'Belum ada transaksi. Mulai input di menu Kas Harian.'});
+  var alertEl=document.getElementById('dash-alerts');
+  if(alertEl){
+    alertEl.innerHTML=alerts.map(function(a){
+      var cls=a.t==='danger'?'ae':a.t==='warning'?'aw':'ai';
+      return '<div class="alert '+cls+'" style="margin-bottom:10px"><i class="ti '+a.i+'"></i> '+a.m+'</div>';
+    }).join('');
+  }
+
+  // ── UNIT CHART ──────────────────────────────────────
   var akunPend=buildAkunList().filter(function(a){return a.k.startsWith('4-')&&a.t==='masuk';});
-  var colorList=['var(--teal2)','var(--blue)','var(--gold)','#9B59B6','#E67E22','#1ABC9C','#E74C3C'];
+  var colorList=['var(--teal2)','var(--blue)','var(--gold)','#9B59B6','#E67E22','#1ABC9C'];
   var units=akunPend.map(function(a,i){
     return{l:a.n.replace('Penerimaan ','').replace('Unit ',''),v:L.pU[a.k]||0,c:colorList[i%colorList.length]};
   });
   var maxU=Math.max.apply(null,units.map(function(u){return u.v;}).concat([1]));
-    var unitChartHtml='<div style="display:flex;flex-direction:column;gap:11px;padding:4px 0">';
+  var unitHtml='<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">';
   units.forEach(function(u){
-    unitChartHtml+='<div>'
+    var pct2=Math.round(u.v/maxU*100);
+    unitHtml+='<div>'
       +'<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px">'
       +'<span style="color:var(--ink2);font-weight:500">'+u.l+'</span>'
       +'<span style="font-weight:700;color:'+u.c+';font-family:var(--mono);font-size:11px">'+fmt(u.v)+'</span>'
       +'</div>'
-      +'<div class="pbar"><div class="pfill" style="width:'+Math.round(u.v/maxU*100)+'%;background:'+u.c+'"></div></div>'
+      +'<div class="pbar"><div class="pfill" style="width:'+pct2+'%;background:'+u.c+'"></div></div>'
       +'</div>';
   });
-  unitChartHtml+='</div>';
-  document.getElementById('unit-chart').innerHTML=unitChartHtml;
+  unitHtml+='</div>';
+  var uc=document.getElementById('unit-chart');
+  if(uc) uc.innerHTML=unitHtml;
 
-  const blnD=BULAN.map((b,i)=>{const k=(p.tahun||2026)+'-'+String(i+1).padStart(2,'0');const L2=calc(k);return{b:b.substring(0,3),m:L2.tp,k:L2.tb};});
-  const maxB=Math.max(...blnD.map(d=>Math.max(d.m,d.k)),1);
-  document.getElementById('bulan-chart').innerHTML=`<div style="display:flex;align-items:flex-end;gap:4px;height:120px;padding:0 2px">${blnD.map(d=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px"><div style="width:100%;display:flex;gap:1px;align-items:flex-end;height:100px"><div style="flex:1;background:var(--teal2);border-radius:3px 3px 0 0;height:${Math.round(d.m/maxB*100)}%;min-height:${d.m?3:0}px;transition:height .3s"></div><div style="flex:1;background:var(--red);border-radius:3px 3px 0 0;height:${Math.round(d.k/maxB*100)}%;min-height:${d.k?3:0}px;transition:height .3s"></div></div><div style="font-size:8.5px;color:var(--ink3);margin-top:3px;font-weight:600">${d.b}</div></div>`).join('')}</div><div style="display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:11px"><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:var(--teal2);border-radius:2px;display:inline-block"></span>Masuk</span><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block"></span>Keluar</span></div>`;
+  // ── TREND 6 BULAN TERAKHIR ───────────────────────────
+  var trend6=[];
+  for(var ti=5;ti>=0;ti--){
+    var d=new Date(now.getFullYear(),now.getMonth()-ti,1);
+    var tYear=d.getFullYear(),tMonth=d.getMonth()+1;
+    var tKey=tYear+'-'+(tMonth<10?'0':'')+tMonth;
+    var tL=calc(tKey);
+    trend6.push({b:BULAN[d.getMonth()].substring(0,3),tp:tL.tp,tb:tL.tb,laba:tL.laba});
+  }
+  var maxT=Math.max.apply(null,trend6.map(function(d){return Math.max(d.tp,d.tb);}).concat([1]));
+  var svgBars='';
+  trend6.forEach(function(d,i){
+    var x=20+i*80, htp=Math.round(d.tp/maxT*60), htb=Math.round(d.tb/maxT*60);
+    svgBars+='<rect x="'+x+'" y="'+(65-htp)+'" width="24" height="'+(htp||1)+'" fill="var(--teal2)" rx="3" opacity=".9"/>';
+    svgBars+='<rect x="'+(x+26)+'" y="'+(65-htb)+'" width="24" height="'+(htb||1)+'" fill="var(--red)" rx="3" opacity=".7"/>';
+    svgBars+='<text font-size="9" fill="var(--ink3)" x="'+(x+24)+'" y="78" text-anchor="middle">'+d.b+'</text>';
+    if(d.tp>0) svgBars+='<text font-size="8" fill="var(--teal)" x="'+x+'" y="'+(62-htp)+'" text-anchor="start">'+Math.round(d.tp/1000)+'k</text>';
+  });
+  var bc=document.getElementById('bulan-chart');
+  if(bc) bc.innerHTML='<div style="overflow-x:auto">'
+    +'<svg width="100%" viewBox="0 0 510 90" style="min-width:400px">'+svgBars
+    +'<line x1="10" y1="65" x2="500" y2="65" stroke="var(--border)" stroke-width="0.5"/></svg>'
+    +'<div style="display:flex;gap:12px;justify-content:center;margin-top:4px;font-size:10px">'
+    +'<span><span style="display:inline-block;width:8px;height:8px;background:var(--teal2);border-radius:2px;margin-right:3px"></span>Pendapatan</span>'
+    +'<span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px;margin-right:3px"></span>Beban</span>'
+    +'</div></div>';
 
-  const last5=getTxArr().slice(-5).reverse();
-  document.getElementById('recent-tx').innerHTML=last5.length?`<div style="overflow-x:auto"><table><thead><tr><th>Tanggal</th><th>No. Bukti</th><th>Keterangan</th><th>Unit</th><th style="text-align:right">Masuk</th><th style="text-align:right">Keluar</th></tr></thead><tbody>${last5.map(t=>`<tr><td style="font-size:11.5px">${fmtD(t.tgl)}</td><td style="font-family:var(--mono);font-size:10.5px">${t.bukti||'-'}</td><td style="font-size:12px">${t.ket}</td><td><span class="badge bu">${t.unit}</span></td><td style="text-align:right;color:var(--teal);font-weight:600;font-family:var(--mono);font-size:11px">${t.masuk?fmt(t.masuk):'-'}</td><td style="text-align:right;color:var(--red);font-weight:600;font-family:var(--mono);font-size:11px">${t.keluar?fmt(t.keluar):'-'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty"><i class="ti ti-inbox"></i>Belum ada transaksi</div>';
+  // ── PERBANDINGAN BULAN INI vs BULAN LALU ─────────────
+  var cmp=document.getElementById('dash-compare');
+  if(cmp){
+    var rows=[
+      {lbl:'Pendapatan',ini:LIni.tp,lalu:LLalu.tp},
+      {lbl:'Beban',ini:LIni.tb,lalu:LLalu.tb},
+      {lbl:'Laba/(Rugi)',ini:LIni.laba,lalu:LLalu.laba},
+    ];
+    var bIniLabel=BULAN[now.getMonth()];
+    var blaluLabel=now.getMonth()===0?'Des':BULAN[now.getMonth()-1];
+    var cmpHtml='<table style="width:100%;font-size:11.5px"><thead><tr>'
+      +'<th style="text-align:left;padding:6px;color:var(--ink3)">Item</th>'
+      +'<th style="text-align:right;padding:6px;color:var(--ink3)">'+blaluLabel+'</th>'
+      +'<th style="text-align:right;padding:6px;color:var(--ink3)">'+bIniLabel+'</th>'
+      +'<th style="text-align:right;padding:6px;color:var(--ink3)">Trend</th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      var diff=r.ini-r.lalu;
+      var pctStr=r.lalu!==0?Math.round(diff/Math.abs(r.lalu)*100)+'%':'–';
+      var color=diff>=0?'var(--teal)':'var(--red)';
+      var arrow=diff>=0?'↑':'↓';
+      cmpHtml+='<tr style="border-top:1px solid var(--border)">'
+        +'<td style="padding:7px 6px;font-weight:500">'+r.lbl+'</td>'
+        +'<td style="text-align:right;padding:7px 6px;font-family:var(--mono);color:var(--ink3)">'+fmt(r.lalu)+'</td>'
+        +'<td style="text-align:right;padding:7px 6px;font-family:var(--mono);font-weight:700">'+fmt(r.ini)+'</td>'
+        +'<td style="text-align:right;padding:7px 6px;color:'+color+';font-weight:700">'+arrow+' '+pctStr+'</td>'
+        +'</tr>';
+    });
+    cmpHtml+='</tbody></table>';
+    cmp.innerHTML=cmpHtml;
+  }
+
+  // ── 5 TRANSAKSI TERAKHIR ─────────────────────────────
+  var last5=txArr.slice(-5).reverse();
+  var rtx=document.getElementById('recent-tx');
+  if(rtx){
+    if(!last5.length){
+      rtx.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink3);font-size:12px"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:8px"></i>Belum ada transaksi</div>';
+    } else {
+      var rtxHtml='<div style="overflow-x:auto"><table style="width:100%;font-size:11.5px"><thead><tr>'
+        +'<th>Tanggal</th><th>Keterangan</th><th>Unit</th>'
+        +'<th style="text-align:right">Masuk</th><th style="text-align:right">Keluar</th>'
+        +'</tr></thead><tbody>';
+      last5.forEach(function(t){
+        rtxHtml+='<tr style="border-top:1px solid var(--border)">'
+          +'<td style="padding:6px;color:var(--ink3);white-space:nowrap">'+t.tgl+'</td>'
+          +'<td style="padding:6px">'+t.ket+'</td>'
+          +'<td style="padding:6px"><span class="badge bu" style="font-size:9px">'+t.unit+'</span></td>'
+          +'<td style="padding:6px;text-align:right;font-family:var(--mono);color:var(--teal);font-weight:600">'+(t.masuk?fmt(t.masuk):'–')+'</td>'
+          +'<td style="padding:6px;text-align:right;font-family:var(--mono);color:var(--red);font-weight:600">'+(t.keluar?fmt(t.keluar):'–')+'</td>'
+          +'</tr>';
+      });
+      rtxHtml+='</tbody></table></div>';
+      rtx.innerHTML=rtxHtml;
+    }
+  }
 }
 
-// ==================================================
-//  NERACA
-// ==================================================
+
 function renderNeraca(){
   const L=calc(),p=DB.p,sK=(p.saldo||0)+L.tp-L.tb,aset=p.aset||[0,0,0,0];
   var asetListN=getAsetList();
@@ -2179,6 +2321,102 @@ if(document.readyState==='loading'){
   initUI();
 }
 
+// ======================================================
+// ONBOARDING WIZARD
+// ======================================================
+function showOnboard(){
+  var ob=document.getElementById('onboard-overlay');
+  if(ob) ob.style.display='flex';
+}
+function closeOnboard(){
+  // Simpan data onboarding ke DB
+  var nama=document.getElementById('ob-nama');
+  var desa=document.getElementById('ob-desa');
+  var dir=document.getElementById('ob-dir');
+  var ben=document.getElementById('ob-ben');
+  var saldo=document.getElementById('ob-saldo');
+  var modal=document.getElementById('ob-modal');
+  if(nama&&nama.value) DB.p.nama=nama.value;
+  if(desa&&desa.value) DB.p.desa=desa.value;
+  if(dir&&dir.value) DB.p.dir=dir.value;
+  if(ben&&ben.value) DB.p.ben=ben.value;
+  if(saldo&&saldo.value) DB.p.saldo=parseFloat(saldo.value)||DB.p.saldo;
+  if(modal&&modal.value) DB.p.modal=parseFloat(modal.value)||DB.p.modal;
+  saveToCloud();
+  localStorage.setItem('bumdes_onboarded','1');
+  var ob=document.getElementById('onboard-overlay');
+  if(ob) ob.style.display='none';
+  renderDashboard();
+}
+function obNext(step){
+  document.getElementById('ob-step-'+step).classList.remove('active');
+  document.getElementById('ob-step-'+(step+1)).classList.add('active');
+}
+function obPrev(step){
+  document.getElementById('ob-step-'+step).classList.remove('active');
+  document.getElementById('ob-step-'+(step-1)).classList.add('active');
+}
+
+// ======================================================
+// BACKUP & RESTORE
+// ======================================================
+function exportBackup(){
+  var data=JSON.stringify(DB,null,2);
+  var a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+  a.download='Backup_BUMDes_'+(DB.p.nama||'Widyatama')+'_'+(DB.p.tahun||2026)+'_'+today()+'.json';
+  a.click();
+  alert('Backup berhasil didownload!\nSimpan file ini di tempat aman.');
+}
+function importBackup(input){
+  var file=input.files[0];
+  if(!file) return;
+  if(!confirm('RESTORE DATA?\n\nSemua data saat ini akan diganti dengan data dari file backup.\nPastikan file backup valid.\n\nLanjutkan?')) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.p||!data.tx){throw new Error('Format file tidak valid');}
+      DB=data;
+      if(!DB.arsip) DB.arsip={};
+      saveToCloud();
+      renderDashboard();
+      alert('Data berhasil di-restore dari backup!\nTotal transaksi: '+Object.keys(DB.tx||{}).length+' entri.');
+    }catch(err){
+      alert('Gagal restore: '+err.message+'\nPastikan file yang dipilih adalah file backup BUMDes.');
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ======================================================
+// LOCALSTORAGE FALLBACK - backup lokal otomatis
+// ======================================================
+var LS_DATA_KEY='bumdes_local_data';
+function saveLocalBackup(){
+  try{
+    localStorage.setItem(LS_DATA_KEY, JSON.stringify({
+      data:DB, ts:new Date().toISOString()
+    }));
+  }catch(e){}
+}
+function loadLocalBackup(){
+  try{
+    var saved=localStorage.getItem(LS_DATA_KEY);
+    if(!saved) return null;
+    var parsed=JSON.parse(saved);
+    return parsed.data||null;
+  }catch(e){return null;}
+}
+
+// ======================================================
+// TOOLTIP helper
+// ======================================================
+function mkTip(label, tipText){
+  return label+' <span class="tip"><span class="tip-icon">?</span><span class="tip-box">'+tipText+'</span></span>';
+}
+
 function selTab(el,cid){
   document.querySelectorAll('#'+cid+' .btab').forEach(function(b){b.classList.remove('active');});
   el.classList.add('active');
@@ -2261,6 +2499,55 @@ if(document.readyState==='loading'){
   </div>
 </div>
 
+<!-- ONBOARDING WIZARD -->
+<div id="onboard-overlay">
+  <div class="onboard-card">
+    <div class="onboard-step active" id="ob-step-1">
+      <div class="onboard-num">1</div>
+      <div class="onboard-title">Selamat Datang di SAK BUMDes!</div>
+      <div class="onboard-desc">Sebelum mulai, mari lengkapi profil BUMDes Anda. Informasi ini akan muncul di semua laporan keuangan.</div>
+      <div class="fr">
+        <div class="fg"><label>Nama BUMDes</label><input id="ob-nama" type="text" placeholder="Contoh: BUMDes WIDYATAMA"></div>
+        <div class="fg"><label>Nama Desa</label><input id="ob-desa" type="text" placeholder="Contoh: Kaligowong"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>Direktur</label><input id="ob-dir" type="text" placeholder="Nama lengkap"></div>
+        <div class="fg"><label>Bendahara</label><input id="ob-ben" type="text" placeholder="Nama lengkap"></div>
+      </div>
+      <div class="onboard-btns">
+        <button class="btn" onclick="closeOnboard()">Lewati</button>
+        <button class="btn bp" onclick="obNext(1)">Lanjut <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+    <div class="onboard-step" id="ob-step-2">
+      <div class="onboard-num">2</div>
+      <div class="onboard-title">Modal & Saldo Awal</div>
+      <div class="onboard-desc">Isi saldo kas yang dikuasai Bendahara saat ini dan total modal yang disetor Desa ke BUMDes.</div>
+      <div class="fr">
+        <div class="fg"><label>Saldo Kas Awal (Rp)</label><input id="ob-saldo" type="number" placeholder="0"></div>
+        <div class="fg"><label>Modal Penyertaan Desa (Rp)</label><input id="ob-modal" type="number" placeholder="0"></div>
+      </div>
+      <div class="onboard-btns">
+        <button class="btn" onclick="obPrev(2)"><i class="ti ti-arrow-left"></i> Kembali</button>
+        <button class="btn bp" onclick="obNext(2)">Lanjut <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+    <div class="onboard-step" id="ob-step-3">
+      <div class="onboard-num">3</div>
+      <div class="onboard-title">Siap Digunakan!</div>
+      <div class="onboard-desc">Data profil tersimpan. Anda bisa mulai input transaksi di menu <strong>Kas Harian</strong>.<br><br>Tips: Lengkapi data aset tetap dan unit usaha di menu <strong>Pengaturan</strong>.</div>
+      <div style="background:var(--teal-gl);border-radius:var(--r);padding:12px 14px;font-size:12px;color:var(--teal);border:1px solid rgba(14,163,127,.2);margin-bottom:16px">
+        <i class="ti ti-check"></i> <strong>Profil BUMDes</strong> tersimpan<br>
+        <i class="ti ti-check"></i> <strong>Saldo & Modal</strong> tercatat<br>
+        <i class="ti ti-check"></i> <strong>6 Laporan Wajib</strong> siap digenerate
+      </div>
+      <div class="onboard-btns">
+        <button class="btn bp" onclick="closeOnboard()">Mulai Input Transaksi <i class="ti ti-rocket"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN -->
 <div class="login-overlay" id="login-overlay" style="display:none">
   <div class="auth-pattern"></div>
@@ -2328,16 +2615,24 @@ if(document.readyState==='loading'){
         <div class="page-hdr">
           <div class="page-hdr-row">
             <div><h2>Dashboard</h2><p id="tgl-now2">Ringkasan keuangan tahun berjalan</p></div>
+            <div class="btn-group">
+              <button class="btn be bsm" onclick="exportBackup()"><i class="ti ti-download"></i> Backup</button>
+              <button class="btn bg2b bsm" onclick="document.getElementById('import-file').click()"><i class="ti ti-upload"></i> Restore</button>
+              <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBackup(this)">
+            </div>
           </div>
         </div>
-        
         <div id="manager-info" style="display:none" class="alert ai" style="margin-bottom:12px"><i class="ti ti-shield-check"></i> Anda login sebagai <strong>Manager</strong> — akses baca laporan &amp; kas harian (read-only). Hubungi Admin untuk input atau hapus transaksi.</div>
+        <div id="dash-alerts"></div>
         <div class="sgrid" id="stat-grid"></div>
         <div id="dash-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Pendapatan per Unit Usaha</div><div class="chart-wrap" id="unit-chart"></div></div>
-          <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Ringkasan per Bulan</div><div class="chart-wrap" id="bulan-chart"></div></div>
+          <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Trend 6 Bulan Terakhir</div><div class="chart-wrap" id="bulan-chart"></div></div>
         </div>
-        <div class="card"><div class="ct"><i class="ti ti-history"></i>5 Transaksi Terakhir</div><div id="recent-tx"></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="dash-bottom">
+          <div class="card"><div class="ct"><i class="ti ti-history"></i>5 Transaksi Terakhir</div><div id="recent-tx"></div></div>
+          <div class="card"><div class="ct"><i class="ti ti-target"></i>Performa Bulan Ini vs Bulan Lalu</div><div id="dash-compare"></div></div>
+        </div>
       </div>
 
       <!-- KAS HARIAN -->
