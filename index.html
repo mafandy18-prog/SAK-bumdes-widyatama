@@ -1164,7 +1164,7 @@ function renderDashboard(){
     unitHtml+='<div style="margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
       +'<span style="font-size:12px;font-weight:600;color:#374151">'+u.l+'</span>'
-      +'<span style="font-size:11.5px;font-weight:700;font-family:monospace;white-space:nowrap;margin-left:8px;color:'+u.c+'">'+(u.v>0?fmt(u.v).replace('\u202f',' '):'–')+'</span>'
+      +'<span style="font-size:11.5px;font-weight:700;font-family:monospace;white-space:nowrap;margin-left:8px;color:'+u.c+'">'+(u.v>0?(u.v>=1000000?(u.v/1000000).toFixed(1)+' jt':u.v>=1000?Math.round(u.v/1000)+'rb':u.v):'–')+'</span>'
       +'</div>'
       +'<div style="height:7px;background:#E5E8ED;border-radius:10px">'
       +'<div style="height:100%;width:'+pct2+'%;background:'+u.c+';border-radius:10px"></div>'
