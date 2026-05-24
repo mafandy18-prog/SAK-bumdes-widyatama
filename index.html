@@ -1101,6 +1101,7 @@ function ttd(){
 // ==================================================
 function renderDashboard(){
   var L=calc(null), p=DB.p, tahun=p.tahun||2026;
+  var txArr=getTxArr();
   var sK=Math.round((p.saldo||0)+L.tp-L.tb);
   var asetList=getAsetList();
   var susut=asetList.reduce(function(s,a){return s+hitungAkumSusut(a,tahun);},0);
@@ -1166,130 +1167,49 @@ function renderDashboard(){
     return{l:a.n.replace('Penerimaan ','').replace('Unit ',''),v:L.pU[a.k]||0,c:colorList[i%colorList.length]};
   });
   var maxU=Math.max.apply(null,units.map(function(u){return u.v;}).concat([1]));
-  var unitHtml='<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">';
+  var unitHtml='';
   units.forEach(function(u){
     var pct2=u.v>0?Math.round(u.v/maxU*100):0;
-    // Layout: nama di atas, progress bar, nilai di bawah kanan
-    unitHtml+='<div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+    unitHtml+='<div style="margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
       +'<span style="font-size:12px;font-weight:600;color:#374151">'+u.l+'</span>'
-      +'<span style="font-size:11.5px;font-weight:700;color:'+u.c+';font-family:monospace">'+(u.v>0?fmt(u.v):'–')+'</span>'
+      +'<span style="font-size:11.5px;font-weight:700;font-family:monospace;white-space:nowrap;margin-left:8px;color:'+u.c+'">'+(u.v>0?fmt(u.v):'–')+'</span>'
       +'</div>'
       +'<div style="height:7px;background:#E5E8ED;border-radius:10px">'
       +'<div style="height:100%;width:'+pct2+'%;background:'+u.c+';border-radius:10px"></div>'
       +'</div>'
       +'</div>';
   });
-  unitHtml+='</div>';
   var uc=document.getElementById('unit-chart');
   if(uc) uc.innerHTML=unitHtml;
-
-  // ── TREND 6 BULAN - MOBILE FRIENDLY ─────────────────
-  var trend6=[];
-  for(var ti=5;ti>=0;ti--){
-    var dm=new Date(now.getFullYear(),now.getMonth()-ti,1);
-    var tY=dm.getFullYear(), tM=dm.getMonth()+1;
-    var tK=tY+'-'+(tM<10?'0':'')+tM;
-    var tL=calc(tK);
-    trend6.push({b:BULAN[dm.getMonth()].substring(0,3),tp:tL.tp,tb:tL.tb});
-  }
-  var maxT=Math.max.apply(null,trend6.map(function(d){return Math.max(d.tp,d.tb);}).concat([1]));
-  var BAR_W=18, BAR_GAP=6, GROUP_GAP=16, LEFT=24;
-  var groupW=BAR_W*2+BAR_GAP+GROUP_GAP;
-  var svgW=LEFT+trend6.length*groupW+10;
-  var svgH=90;
-  var chartH=60;
-  var svgBars='';
-  trend6.forEach(function(d,i){
-    var x=LEFT+i*groupW;
-    var htp=d.tp>0?Math.max(2,Math.round(d.tp/maxT*chartH)):2;
-    var htb=d.tb>0?Math.max(2,Math.round(d.tb/maxT*chartH)):2;
-    // Bar pendapatan
-    svgBars+='<rect x="'+x+'" y="'+(chartH-htp)+'" width="'+BAR_W+'" height="'+htp+'" fill="#0E7C65" rx="3" opacity=".9"/>';
-    // Bar beban
-    svgBars+='<rect x="'+(x+BAR_W+BAR_GAP)+'" y="'+(chartH-htb)+'" width="'+BAR_W+'" height="'+htb+'" fill="#C0392B" rx="3" opacity=".8"/>';
-    // Label bulan
-    svgBars+='<text font-size="9" fill="#6B7280" x="'+(x+BAR_W)+'" y="'+(chartH+12)+'" text-anchor="middle">'+d.b+'</text>';
-    // Label nilai pendapatan (hanya jika ada)
-    if(d.tp>0){
-      var valLabel=d.tp>=1000000?(d.tp/1000000).toFixed(1)+'jt':(Math.round(d.tp/1000))+'k';
-      svgBars+='<text font-size="8" fill="#0E7C65" x="'+(x+BAR_W/2)+'" y="'+(chartH-htp-3)+'" text-anchor="middle">'+valLabel+'</text>';
-    }
-  });
-  var bc=document.getElementById('bulan-chart');
-  if(bc) bc.innerHTML=''
-    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
-    +'<svg width="'+svgW+'px" height="'+svgH+'px" viewBox="0 0 '+svgW+' '+svgH+'" style="display:block;min-width:280px">'
-    +svgBars
-    +'<line x1="'+LEFT+'" y1="'+chartH+'" x2="'+(svgW-5)+'" y2="'+chartH+'" stroke="#E5E8ED" stroke-width="0.5"/>'
-    +'</svg>'
-    +'</div>'
-    +'<div style="display:flex;gap:14px;justify-content:center;margin-top:8px;font-size:11px">'
-    +'<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#0E7C65;border-radius:2px;display:inline-block"></span>Pendapatan</span>'
-    +'<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#C0392B;border-radius:2px;display:inline-block"></span>Beban</span>'
-    +'</div>';
-
-  // ── PERBANDINGAN BULAN INI vs BULAN LALU ─────────────
-  var cmp=document.getElementById('dash-compare');
-  if(cmp){
-    var bIniLabel=BULAN[mIni];
-    var bLaluLabel=BULAN[mLalu];
-    var rows=[
-      {lbl:'Pendapatan',ini:LIni.tp,lalu:LLalu.tp},
-      {lbl:'Beban',ini:LIni.tb,lalu:LLalu.tb},
-      {lbl:'Laba/(Rugi)',ini:LIni.laba,lalu:LLalu.laba},
-    ];
-    var cmpHtml='<div style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;width:100%;max-width:100%">'
-      +'<table style="width:100%;font-size:11px;border-collapse:collapse">'
-      +'<thead><tr>'
-      +'<th style="text-align:left;padding:7px 8px;color:#6B7280;font-weight:600;font-size:11px;white-space:nowrap">Item</th>'
-      +'<th style="text-align:right;padding:7px 8px;color:#6B7280;font-weight:600;font-size:11px;white-space:nowrap">'+bLaluLabel+'</th>'
-      +'<th style="text-align:right;padding:7px 8px;color:#6B7280;font-weight:600;font-size:11px;white-space:nowrap">'+bIniLabel+'</th>'
-      +'<th style="text-align:right;padding:7px 8px;color:#6B7280;font-weight:600;font-size:11px;white-space:nowrap">Trend</th>'
-      +'</tr></thead><tbody>';
-    rows.forEach(function(r){
-      var diff=r.ini-r.lalu;
-      var pctStr=r.lalu!==0?(diff>=0?'↑ +':'↓ ')+Math.abs(Math.round(diff/Math.abs(r.lalu)*100))+'%':'–';
-      var color=diff>=0?'var(--teal)':'var(--red)';
-      cmpHtml+='<tr style="border-top:1px solid var(--border)">'
-        +'<td style="padding:8px 6px;font-weight:500;white-space:nowrap">'+r.lbl+'</td>'
-        +'<td style="text-align:right;padding:8px 6px;font-family:monospace;color:#6B7280;font-size:11px;white-space:nowrap">'+fmt(r.lalu)+'</td>'
-        +'<td style="text-align:right;padding:8px 6px;font-family:monospace;font-weight:700;font-size:11px;white-space:nowrap">'+fmt(r.ini)+'</td>'
-        +'<td style="text-align:right;padding:8px 6px;color:'+color+';font-weight:700;font-size:11px">'+pctStr+'</td>'
-        +'</tr>';
-    });
-    cmpHtml+='</tbody></table></div>';
-    cmp.innerHTML=cmpHtml;
-  }
-
-  // ── 5 TRANSAKSI TERAKHIR ─────────────────────────────
-  var txArr=getTxArr();
   var last5=txArr.slice(-5).reverse();
   var rtx=document.getElementById('recent-tx');
   if(rtx){
     if(!last5.length){
-      rtx.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink3);font-size:12px">'
-        +'<i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:8px"></i>Belum ada transaksi</div>';
+      rtx.innerHTML='<div style="text-align:center;padding:20px;color:#6B7280;font-size:12px"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:8px"></i>Belum ada transaksi</div>';
     } else {
-      var rtxHtml='<div style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;width:100%;max-width:100%">'
-        +'<table style="width:100%;font-size:11px;border-collapse:collapse"><thead><tr>'
-        +'<th style="white-space:nowrap">Tgl</th><th>Keterangan</th><th>Unit</th><th style="text-align:right">Nominal</th>'
-        +'</tr></thead><tbody>';
+      var rows='';
       last5.forEach(function(t){
-        rtxHtml+='<tr style="border-top:1px solid var(--border)">'
-          +'<td style="padding:6px 4px;color:#6B7280;white-space:nowrap;font-size:10px">'+t.tgl.substring(5)+'</td>'
-          +'<td style="padding:6px 4px;font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.ket+'</td>'
-          +'<td style="padding:6px 4px"><span style="background:#E8F4FD;color:#1A5C9A;font-size:9px;padding:2px 6px;border-radius:20px;white-space:nowrap">'+t.unit+'</span></td>'
-          +'<td style="padding:6px 4px;text-align:right;font-family:monospace;font-weight:700;white-space:nowrap;color:'+(t.masuk?'#0E7C65':'#C0392B')+'">'+(t.masuk?'+'+fmt(t.masuk):'-'+fmt(t.keluar))+'</td>'
+        var isIn=t.masuk>0;
+        rows+='<tr>'
+          +'<td style="padding:7px 8px;color:#6B7280;white-space:nowrap;font-size:10px">'+t.tgl.substring(5)+'</td>'
+          +'<td style="padding:7px 8px;font-size:11px;white-space:nowrap">'+t.ket+'</td>'
+          +'<td style="padding:7px 8px;white-space:nowrap"><span style="background:#E8F4FD;color:#1A5C9A;font-size:9px;padding:2px 6px;border-radius:20px">'+t.unit+'</span></td>'
+          +'<td style="padding:7px 8px;text-align:right;font-family:monospace;font-weight:700;white-space:nowrap;color:'+(isIn?'#0E7C65':'#C0392B')+'">'+(isIn?'+':'-')+fmt(isIn?t.masuk:t.keluar)+'</td>'
           +'</tr>';
       });
-      rtxHtml+='</tbody></table></div>';
-      rtx.innerHTML=rtxHtml;
+      rtx.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+        +'<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr>'
+        +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Tgl</th>'
+        +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Keterangan</th>'
+        +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:left">Unit</th>'
+        +'<th style="background:#0D1B2A;color:#fff;padding:7px 8px;white-space:nowrap;text-align:right">Nominal</th>'
+        +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
     }
   }
+
+
 }
-
-
 function renderNeraca(){
   const L=calc(),p=DB.p,sK=(p.saldo||0)+L.tp-L.tb,aset=p.aset||[0,0,0,0];
   var asetListN=getAsetList();
