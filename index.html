@@ -15,35 +15,35 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0D1B2A;
-  --navy2:#162032;
-  --navy3:#1E2E42;
-  --teal:#0E7C65;
-  --teal2:#0FA37F;
-  --teal3:#13C99D;
-  --teal-gl:#E0F5EF;
-  --gold:#C8973A;
-  --gold2:#E8B254;
+  --navy:#1A1A1A;
+  --navy2:#2A2A2A;
+  --navy3:#3A3A3A;
+  --teal:#D97757;
+  --teal2:#C4622D;
+  --teal3:#E8956A;
+  --teal-gl:#FDF0E8;
+  --gold:#C4873A;
+  --gold2:#E8A84A;
   --gold-gl:#FDF3E3;
   --red:#C0392B;
   --red2:#E74C3C;
   --red-gl:#FDECEA;
-  --blue:#1A5C9A;
-  --blue2:#2980B9;
-  --blue-gl:#E8F4FD;
-  --ink:#0D1B2A;
-  --ink2:#374151;
-  --ink3:#6B7280;
-  --border:#E5E8ED;
-  --border2:#D1D5DB;
-  --bg:#F2F4F7;
+  --blue:#7B5EA7;
+  --blue2:#9B7EC7;
+  --blue-gl:#F0EBF8;
+  --bg:#FAF8F5;
   --bg2:#FFFFFF;
-  --bg3:#F7F8FA;
-  --r:10px;--rs:7px;--rl:14px;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
-  --shadow-md:0 4px 16px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06);
-  --shadow-lg:0 12px 40px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);
-  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+  --bg3:#F5F2EE;
+  --border:#E8E0D8;
+  --border2:#D8D0C8;
+  --ink:#1A1A1A;
+  --ink2:#4A4A4A;
+  --ink3:#8A8A8A;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow2:0 4px 12px rgba(0,0,0,.08);
+  --r:10px;
+  --r2:14px;
+  --rs:6px;
   --mono:'IBM Plex Mono',monospace;
 }
 html,body{font-family:var(--font);font-size:14px;color:var(--ink);background:var(--bg);margin:0;-webkit-font-smoothing:antialiased}
@@ -120,7 +120,7 @@ html,body{font-family:var(--font);font-size:14px;color:var(--ink);background:var
 .stat.s-red::after{background:var(--red2)}
 .stat.s-blue::after{background:var(--blue2)}
 .stat-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
-.si-teal{background:var(--teal-gl);color:var(--teal)}
+.si-orange{background:var(--teal-gl);color:var(--teal)}
 .si-gold{background:var(--gold-gl);color:var(--gold)}
 .si-red{background:var(--red-gl);color:var(--red)}
 .si-blue{background:var(--blue-gl);color:var(--blue)}
@@ -276,7 +276,7 @@ tr:hover td{background:rgba(14,163,127,.03)}
   .ttdw{break-inside:avoid}
   .calk-section{break-inside:avoid}
   .page-break{page-break-before:always}
-  .kop-logo{background:linear-gradient(135deg,#0E7C65,#0D1B2A)!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .kop-logo{background:linear-gradient(135deg,#D97757,#1A1A1A)!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
 
 /* ── RESPONSIVE ──────────────────────────── */
@@ -1022,7 +1022,7 @@ function cetakKwitansi(txId){
     // KOP - identik dengan laporan
     // JUDUL
     +'.judul{text-align:center;margin:16px 0 14px}'
-    +'.judul h2{font-size:14pt;font-weight:700;text-transform:uppercase;letter-spacing:2px;border:2.5px solid #0D1B2A;display:inline-block;padding:5px 28px;border-radius:2px}'
+    +'.judul h2{font-size:14pt;font-weight:700;text-transform:uppercase;letter-spacing:2px;border:2.5px solid #1A1A1A;display:inline-block;padding:5px 28px;border-radius:2px}'
     +'.judul p{font-size:10pt;margin-top:7px;color:#374151}'
     // BODY TABLE
     +'.bk{width:100%;border-collapse:collapse;margin-bottom:16px}'
@@ -1039,18 +1039,18 @@ function cetakKwitansi(txId){
     +'.ttd-bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px}'
     +'.ttd-box{border:1px solid #D1D5DB;border-radius:6px;padding:12px 16px;text-align:center}'
     +'.ttd-title{font-size:10.5pt;line-height:1.6;margin-bottom:72px}'
-    +'.ttd-line{border-top:2px solid #0D1B2A;margin-top:4px;padding-top:6px}'
-    +'.ttd-name{font-size:12pt;font-weight:700;color:#0D1B2A}'
+    +'.ttd-line{border-top:2px solid #1A1A1A;margin-top:4px;padding-top:6px}'
+    +'.ttd-name{font-size:12pt;font-weight:700;color:#1A1A1A}'
     +'.ttd-jabatan{font-size:9.5pt;color:#6B7280;margin-top:2px}'
     +'.footer{margin-top:16px;padding-top:8px;border-top:1px dashed #9CA3AF;font-size:8.5pt;color:#9CA3AF;text-align:center}'
     +'@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
     +'</style></head><body>'
 
     // ── KOP SURAT - Logo tengah, teks tengah ──
-    +'<div style="text-align:center;padding-bottom:12px;border-bottom:3px solid #0D1B2A;margin-bottom:16px">'
+    +'<div style="text-align:center;padding-bottom:12px;border-bottom:3px solid #1A1A1A;margin-bottom:16px">'
     +'<img src="'+imgSrc+'" alt="Logo" style="width:80px;height:80px;object-fit:cover;display:block;margin:0 auto 8px;border-radius:50%">'
     +'<div style="font-size:11pt;color:#374151;font-weight:400;margin-bottom:2px">BADAN USAHA MILIK DESA (BUMDes)</div>'
-    +'<div style="font-size:16pt;font-weight:800;color:#0E7C65;letter-spacing:0.5px;margin-bottom:4px">'+(p.nama||'BUMDes WIDYATAMA')+'</div>'
+    +'<div style="font-size:16pt;font-weight:800;color:#D97757;letter-spacing:0.5px;margin-bottom:4px">'+(p.nama||'BUMDes WIDYATAMA')+'</div>'
     +'<div style="font-size:9pt;color:#6B7280">Desa '+(p.desa||'')+' &middot; Kecamatan '+(p.kec||'')+' &middot; Kabupaten '+(p.kab||'')+' &middot; Provinsi Jawa Tengah</div>'
     +'</div>'
 
@@ -1278,7 +1278,7 @@ function renderDashboard(){
   function trendStr(ini,lalu){
     if(lalu===0) return '<span style="color:#9CA3AF">–</span>';
     var d=Math.round((ini-lalu)/Math.abs(lalu)*100);
-    var c=d>=0?'#0E7C65':'#C0392B';
+    var c=d>=0?'#D97757':'#C0392B';
     return '<span style="color:'+c+'">'+(d>=0?'+':'')+d+'%</span> vs bulan lalu';
   }
 
@@ -1286,10 +1286,10 @@ function renderDashboard(){
   var grid=document.getElementById('stat-grid');
   if(!grid) return;
   var stats=[
-    {icon:'ti-trending-up',  lbl:'Total Pendapatan', val:fmt(L.tp),     cls:'si-teal', color:'var(--teal)', sub:trendStr(LIni.tp,   LLalu.tp)},
+    {icon:'ti-trending-up',  lbl:'Total Pendapatan', val:fmt(L.tp),     cls:'si-orange', color:'var(--teal)', sub:trendStr(LIni.tp,   LLalu.tp)},
     {icon:'ti-trending-down',lbl:'Total Beban',       val:fmt(L.tb),     cls:'si-red',  color:'var(--red)',  sub:'Bulan ini: '+fmt(LIni.tb)},
     {icon:'ti-chart-bar',    lbl:'Laba Bersih',       val:fmt(L.laba),   cls:'si-gold', color:'var(--gold)', sub:trendStr(LIni.laba, LLalu.laba)},
-    {icon:'ti-cash',         lbl:'Saldo Kas',         val:fmt(sK),       cls:'si-teal', color:'var(--teal)', sub:sK<500000?'<span style="color:#C0392B">Saldo rendah!</span>':'Kondisi sehat'},
+    {icon:'ti-cash',         lbl:'Saldo Kas',         val:fmt(sK),       cls:'si-orange', color:'var(--teal)', sub:sK<500000?'<span style="color:#C0392B">Saldo rendah!</span>':'Kondisi sehat'},
     {icon:'ti-building-store',lbl:'Total Aset',       val:fmt(totalAset),cls:'si-blue', color:'var(--blue)', sub:'Aset tetap bersih: '+fmt(bruto-susut)},
     {icon:'ti-building-community',lbl:'PADes ke Desa',val:fmt(pades),   cls:'si-gold', color:'var(--gold)', sub:pct+'% dari laba bersih'},
   ];
@@ -1315,7 +1315,7 @@ function renderDashboard(){
 
   // ── PENDAPATAN PER UNIT ──
   var akunPend=buildAkunList().filter(function(a){return a.k.startsWith('4-')&&a.t==='masuk';});
-  var colorList=['#0E7C65','#1A5C9A','#C8973A','#7D3C98','#E67E22','#1ABC9C'];
+  var colorList=['#D97757','#7B5EA7','#C8973A','#7D3C98','#E67E22','#E8956A'];
   var units=akunPend.map(function(a,i){
     return{l:a.n.replace('Penerimaan ','').replace('Unit ',''),v:L.pU[a.k]||0,c:colorList[i%colorList.length]};
   });
@@ -1331,7 +1331,7 @@ function renderDashboard(){
       +'<span style="font-size:12px;font-weight:600;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+u.l+'</span>'
       +'<span style="font-size:11px;font-weight:700;color:'+u.c+';white-space:nowrap;flex-shrink:0">'+valStr+'</span>'
       +'</div>'
-      +'<div style="height:7px;background:#E5E8ED;border-radius:10px;overflow:hidden">'
+      +'<div style="height:7px;background:#E8E0D8;border-radius:10px;overflow:hidden">'
       +'<div style="height:100%;width:'+pct2+'%;background:'+u.c+';border-radius:10px"></div>'
       +'</div></div>';
   });
@@ -1370,24 +1370,24 @@ function renderDashboard(){
   // Grid lines
   for(var gi=0;gi<=4;gi++){
     var gy=PAD+gi*(INNER_H/4);
-    svgLines+='<line x1="'+PAD+'" y1="'+gy.toFixed(1)+'" x2="'+(PAD+INNER_W)+'" y2="'+gy.toFixed(1)+'" stroke="#E5E8ED" stroke-width="0.5"/>';
+    svgLines+='<line x1="'+PAD+'" y1="'+gy.toFixed(1)+'" x2="'+(PAD+INNER_W)+'" y2="'+gy.toFixed(1)+'" stroke="#E8E0D8" stroke-width="0.5"/>';
     var gv=Math.round(maxT*(1-gi/4));
     if(gv>0) svgLines+='<text x="'+(PAD-4)+'" y="'+(gy+3).toFixed(1)+'" text-anchor="end" font-size="7" fill="#9CA3AF">'+(gv>=1000000?(gv/1000000).toFixed(1)+'jt':(gv/1000).toFixed(0)+'k')+'</text>';
   }
   // Area pendapatan
-  svgLines+='<path d="'+mkArea(pts_tp)+'" fill="#0E7C65" opacity="0.08"/>';
+  svgLines+='<path d="'+mkArea(pts_tp)+'" fill="#D97757" opacity="0.08"/>';
   // Line pendapatan
-  svgLines+='<path d="'+mkPath(pts_tp)+'" fill="none" stroke="#0E7C65" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  svgLines+='<path d="'+mkPath(pts_tp)+'" fill="none" stroke="#D97757" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
   // Area beban
   svgLines+='<path d="'+mkArea(pts_tb)+'" fill="#C0392B" opacity="0.06"/>';
   // Line beban
   svgLines+='<path d="'+mkPath(pts_tb)+'" fill="none" stroke="#C0392B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="4,3"/>';
   // Dots + labels pendapatan
   pts_tp.forEach(function(p){
-    svgLines+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#0E7C65" stroke="#fff" stroke-width="1.5"/>';
+    svgLines+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#D97757" stroke="#fff" stroke-width="1.5"/>';
     if(p.v>0){
       var lbl=p.v>=1000000?(p.v/1000000).toFixed(1)+'jt':(Math.round(p.v/1000))+'k';
-      svgLines+='<text x="'+p.x.toFixed(1)+'" y="'+(p.y-8).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#0E7C65" font-weight="600">'+lbl+'</text>';
+      svgLines+='<text x="'+p.x.toFixed(1)+'" y="'+(p.y-8).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#D97757" font-weight="600">'+lbl+'</text>';
     }
     svgLines+='<text x="'+p.x.toFixed(1)+'" y="'+(PAD+INNER_H+14)+'" text-anchor="middle" font-size="9" fill="#6B7280">'+p.b+'</text>';
   });
@@ -1399,7 +1399,7 @@ function renderDashboard(){
   if(bc) bc.innerHTML=''
     +'<svg width="100%" viewBox="0 0 '+W+' '+(H+10)+'" style="display:block;overflow:visible">'+svgLines+'</svg>'
     +'<div style="display:flex;gap:14px;justify-content:center;margin-top:4px;font-size:10px">'
-    +'<span style="display:flex;align-items:center;gap:4px"><svg width="16" height="3"><line x1="0" y1="1.5" x2="16" y2="1.5" stroke="#0E7C65" stroke-width="2.5"/></svg>Pendapatan</span>'
+    +'<span style="display:flex;align-items:center;gap:4px"><svg width="16" height="3"><line x1="0" y1="1.5" x2="16" y2="1.5" stroke="#D97757" stroke-width="2.5"/></svg>Pendapatan</span>'
     +'<span style="display:flex;align-items:center;gap:4px"><svg width="16" height="3"><line x1="0" y1="1.5" x2="16" y2="1.5" stroke="#C0392B" stroke-width="2" stroke-dasharray="4,3"/></svg>Beban</span>'
     +'</div>';
 
@@ -1416,15 +1416,15 @@ function renderDashboard(){
     ];
 
     // Layout: card per item, bukan tabel horizontal
-    var html2='<div style="font-size:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#E5E8ED;border-radius:8px;overflow:hidden;margin-top:4px">';
+    var html2='<div style="font-size:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#E8E0D8;border-radius:8px;overflow:hidden;margin-top:4px">';
     // Header
-    html2+='<div style="background:#0D1B2A;color:#fff;padding:7px 8px;font-weight:700">ITEM</div>';
-    html2+='<div style="background:#0D1B2A;color:#9CA3AF;padding:7px 8px;text-align:right">'+bL+'</div>';
-    html2+='<div style="background:#0D1B2A;color:#fff;padding:7px 8px;text-align:right">'+bI+'</div>';
+    html2+='<div style="background:#1A1A1A;color:#fff;padding:7px 8px;font-weight:700">ITEM</div>';
+    html2+='<div style="background:#1A1A1A;color:#9CA3AF;padding:7px 8px;text-align:right">'+bL+'</div>';
+    html2+='<div style="background:#1A1A1A;color:#fff;padding:7px 8px;text-align:right">'+bI+'</div>';
     rows2.forEach(function(r){
       var diff=r.ini-r.lalu;
       var pct=r.lalu!==0?(diff>=0?'+':'')+Math.round(diff/Math.abs(r.lalu)*100)+'%':'–';
-      var color=diff>=0?'#0E7C65':'#C0392B';
+      var color=diff>=0?'#D97757':'#C0392B';
       var bIni=bI+' <span style="color:'+color+';font-weight:700">'+pct+'</span>';
       html2+='<div style="background:#fff;padding:8px;font-size:10.5px;font-weight:600">'+r.lbl+'</div>';
       html2+='<div style="background:#fff;padding:8px;text-align:right;font-family:monospace;font-size:10px;color:#9CA3AF">'+fmt(r.lalu)+'</div>';
@@ -1448,16 +1448,16 @@ function renderDashboard(){
         rows+='<tr>'
           +'<td style="padding:8px;color:#9CA3AF;white-space:nowrap;font-size:11px">'+t.tgl.substring(5)+'</td>'
           +'<td style="padding:8px;font-size:11px;white-space:nowrap">'+t.ket+'</td>'
-          +'<td style="padding:8px;white-space:nowrap"><span style="background:#E8F4FD;color:#1A5C9A;font-size:9px;padding:2px 7px;border-radius:20px;white-space:nowrap">'+t.unit+'</span></td>'
-          +'<td style="padding:8px;text-align:right;font-family:monospace;font-weight:700;white-space:nowrap;color:'+(isIn?'#0E7C65':'#C0392B')+'">'+nom+'</td>'
+          +'<td style="padding:8px;white-space:nowrap"><span style="background:#F0EBF8;color:#7B5EA7;font-size:9px;padding:2px 7px;border-radius:20px;white-space:nowrap">'+t.unit+'</span></td>'
+          +'<td style="padding:8px;text-align:right;font-family:monospace;font-weight:700;white-space:nowrap;color:'+(isIn?'#D97757':'#C0392B')+'">'+nom+'</td>'
           +'</tr>';
       });
       rtx.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%">'
         +'<table style="border-collapse:collapse;font-size:11px;width:100%"><thead><tr>'
-        +'<th style="background:#0D1B2A;color:#fff;padding:8px;white-space:nowrap;text-align:left;font-size:11px">TGL</th>'
-        +'<th style="background:#0D1B2A;color:#fff;padding:8px;white-space:nowrap;text-align:left;font-size:11px">KETERANGAN</th>'
-        +'<th style="background:#0D1B2A;color:#fff;padding:8px;white-space:nowrap;text-align:left;font-size:11px">UNIT</th>'
-        +'<th style="background:#0D1B2A;color:#fff;padding:8px;white-space:nowrap;text-align:right;font-size:11px">NOMINAL</th>'
+        +'<th style="background:#1A1A1A;color:#fff;padding:8px;white-space:nowrap;text-align:left;font-size:11px">TGL</th>'
+        +'<th style="background:#1A1A1A;color:#fff;padding:8px;white-space:nowrap;text-align:left;font-size:11px">KETERANGAN</th>'
+        +'<th style="background:#1A1A1A;color:#fff;padding:8px;white-space:nowrap;text-align:left;font-size:11px">UNIT</th>'
+        +'<th style="background:#1A1A1A;color:#fff;padding:8px;white-space:nowrap;text-align:right;font-size:11px">NOMINAL</th>'
         +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
     }
   }
@@ -1923,10 +1923,10 @@ function renderIkhtisar(){
     var kpiGrid=document.createElement('div');
     kpiGrid.style.cssText='display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0 16px';
     var kpis=[
-      {icon:'ti-trending-up',lbl:'Total Pendapatan',val:fmt(L.tp),cls:'si-teal',color:'var(--teal)'},
+      {icon:'ti-trending-up',lbl:'Total Pendapatan',val:fmt(L.tp),cls:'si-orange',color:'var(--teal)'},
       {icon:'ti-trending-down',lbl:'Total Beban',val:fmt(L.tb),cls:'si-red',color:'var(--red)'},
       {icon:'ti-chart-bar',lbl:'Laba Bersih',val:fmt(L.laba),cls:'si-gold',color:'var(--gold)'},
-      {icon:'ti-cash',lbl:'Saldo Kas Akhir',val:fmt(sK),cls:'si-teal',color:'var(--teal)'},
+      {icon:'ti-cash',lbl:'Saldo Kas Akhir',val:fmt(sK),cls:'si-orange',color:'var(--teal)'},
       {icon:'ti-percentage',lbl:'Gross Margin',val:grossMargin+'%',cls:'si-blue',color:'var(--blue)'},
       {icon:'ti-building-community',lbl:'PADes ke Desa',val:fmt(pades),cls:'si-gold',color:'var(--gold)'},
     ];
@@ -1951,13 +1951,13 @@ function renderIkhtisar(){
       var x=30+bi*47;
       var hm=Math.round(d.m/maxBar*60);
       var hk=Math.round(d.k/maxBar*60);
-      svgBars+='<rect x="'+x+'" y="'+(70-hm)+'" width="18" height="'+(hm||0)+'" fill="#0E7C65" rx="2" opacity=".85"/>';
+      svgBars+='<rect x="'+x+'" y="'+(70-hm)+'" width="18" height="'+(hm||0)+'" fill="#D97757" rx="2" opacity=".85"/>';
       svgBars+='<rect x="'+(x+20)+'" y="'+(70-hk)+'" width="18" height="'+(hk||0)+'" fill="#C0392B" rx="2" opacity=".7"/>';
       svgBars+='<text font-size="9" fill="#6B7280" x="'+(x+9)+'" y="82" text-anchor="middle">'+d.b.substring(0,3)+'</text>';
     }
-    chartWrap.innerHTML='<svg width="100%" viewBox="0 0 600 95" style="min-width:500px">'+svgBars+'<line x1="20" y1="70" x2="590" y2="70" stroke="#E5E8ED" stroke-width="0.5"/></svg>'
+    chartWrap.innerHTML='<svg width="100%" viewBox="0 0 600 95" style="min-width:500px">'+svgBars+'<line x1="20" y1="70" x2="590" y2="70" stroke="#E8E0D8" stroke-width="0.5"/></svg>'
       +'<div style="display:flex;gap:14px;justify-content:center;margin-top:6px;font-size:11px">'
-      +'<span><span style="display:inline-block;width:10px;height:10px;background:#0E7C65;border-radius:2px;margin-right:4px"></span>Pendapatan</span>'
+      +'<span><span style="display:inline-block;width:10px;height:10px;background:#D97757;border-radius:2px;margin-right:4px"></span>Pendapatan</span>'
       +'<span><span style="display:inline-block;width:10px;height:10px;background:#C0392B;border-radius:2px;margin-right:4px"></span>Beban</span></div>';
     card.appendChild(chartWrap);
 
@@ -2076,7 +2076,7 @@ function renderIkhtisar(){
 function doPrint(page){
   var content=document.getElementById('pg-'+page).innerHTML;
   var w=window.open('','_blank','width=960,height=760');
-  w.document.write('<!DOCTYPE html><html><head><title>Laporan Keuangan BUMDes '+(DB.p.nama||'Widyatama')+'</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Plus Jakarta Sans",Arial,sans-serif;font-size:11pt;color:#0D1B2A;background:#fff;padding:20mm 20mm}@page{margin:20mm 20mm}table{width:100%;border-collapse:collapse;font-size:10pt}th{background:#0D1B2A;color:#fff;padding:7px 9px;text-align:left;font-weight:700;font-size:9pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{padding:5px 9px;border-bottom:1px solid #E5E8ED}.lr{display:flex;justify-content:space-between;padding:5px 10px;font-size:10.5pt;border-bottom:1px solid #E5E8ED}.lr span:last-child{font-family:"IBM Plex Mono",monospace;font-size:10pt;font-weight:600}.lt{font-weight:700;background:#f0f0f0;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ltg{background:#d5f0e8!important;color:#0A6048!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ltg span{color:#0A6048!important}.ltb{background:#d5e5f5!important;color:#1A5C9A!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ls{background:#0D1B2A;color:#fff;padding:7px 12px;font-size:9.5pt;font-weight:700;margin-bottom:3px;margin-top:10px;border-radius:4px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.lss{background:#eee;color:#0D1B2A;padding:5px 12px;font-size:9.5pt;font-weight:600;margin-bottom:2px;margin-top:6px;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.kop{text-align:center;margin-bottom:14px;padding-bottom:12px;border-bottom:3px solid #0D1B2A}.kopn{font-size:13pt;font-weight:800;color:#0D1B2A}.kopa{font-size:9pt;color:#6B7280;margin-top:2px}.kopj{font-size:12pt;font-weight:800;color:#0D1B2A;margin-top:7px;text-transform:uppercase}.kops{font-size:9pt;color:#6B7280;margin-top:3px;border-top:1px solid #E5E8ED;padding-top:6px}.nomor-dok{display:inline-block;background:#FDF3E3;color:#8B5A0A;border:1px solid #C8973A;padding:2px 8px;font-size:9pt;border-radius:4px;font-family:monospace;margin-top:4px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ttdw{margin-top:24px;padding-top:14px;border-top:1px dashed #ccc;page-break-inside:avoid}.ttdkota{text-align:right;font-size:10pt;margin-bottom:16px;color:#374151;font-style:italic}.ttdgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:16px}.ttdcol{border:1px solid #E5E8ED;border-radius:8px;padding:16px 24px;text-align:center}.ttdlbl{font-size:10pt;font-weight:600;color:#6B7280;margin-bottom:5px;line-height:1.5}.ttdsp{height:90pt}.ttdname{font-size:11pt;font-weight:800;color:#0D1B2A;border-top:2px solid #0D1B2A;padding-top:6px;margin-top:3px}.ttdnip{font-size:9pt;color:#6B7280}.ttdkdbox{border:1px solid #E5E8ED;border-radius:8px;padding:16px 24px;text-align:center;max-width:380px;margin:0 auto}.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9pt;font-weight:600}.bm{background:#E0F5EF;color:#0A6048;-webkit-print-color-adjust:exact;print-color-adjust:exact}.bk{background:#FDECEA;color:#C0392B;-webkit-print-color-adjust:exact;print-color-adjust:exact}.bu{background:#E8F4FD;color:#1A5C9A;-webkit-print-color-adjust:exact;print-color-adjust:exact}.calk-note{font-size:10.5pt;line-height:1.9;padding:10px 12px;background:#F7F8FA;border-radius:4px;border-left:3px solid #0E7C65;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.calk-section{margin-bottom:16px;page-break-inside:avoid}.info-box{background:#E8F4FD;border:1px solid #c5ddf5;border-radius:6px;padding:10px 12px;font-size:10pt;color:#1A5C9A;line-height:1.7;-webkit-print-color-adjust:exact;print-color-adjust:exact}.warn-box{background:#FDF3E3;border:1px solid #ead5a6;border-radius:6px;padding:10px 12px;font-size:10pt;color:#7a5a1e;line-height:1.7;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tfoot-row td{background:#F0F0F0;font-weight:700;border-top:2px solid #0D1B2A;-webkit-print-color-adjust:exact;print-color-adjust:exact}.calk-compliance li{font-size:10pt;line-height:1.9;padding:3px 0;display:flex;align-items:flex-start;gap:6px}.calk-compliance li::before{content:"v";color:#0E7C65;font-weight:800}.nav,.topbar,.sidebar,.btn,.frow,.btabs,.sgrid,.form-kas,.page-hdr,.stat,.pbar,.nb,.admin-only,.btn-group,.mob-nav,.mob-more-menu,.mob-more-overlay{display:none!important}</style></head><body>'+content+'</body></html>');
+  w.document.write('<!DOCTYPE html><html><head><title>Laporan Keuangan BUMDes '+(DB.p.nama||'Widyatama')+'</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Plus Jakarta Sans",Arial,sans-serif;font-size:11pt;color:#1A1A1A;background:#fff;padding:20mm 20mm}@page{margin:20mm 20mm}table{width:100%;border-collapse:collapse;font-size:10pt}th{background:#1A1A1A;color:#fff;padding:7px 9px;text-align:left;font-weight:700;font-size:9pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{padding:5px 9px;border-bottom:1px solid #E8E0D8}.lr{display:flex;justify-content:space-between;padding:5px 10px;font-size:10.5pt;border-bottom:1px solid #E8E0D8}.lr span:last-child{font-family:"IBM Plex Mono",monospace;font-size:10pt;font-weight:600}.lt{font-weight:700;background:#f0f0f0;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ltg{background:#d5f0e8!important;color:#0A6048!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ltg span{color:#0A6048!important}.ltb{background:#d5e5f5!important;color:#7B5EA7!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ls{background:#1A1A1A;color:#fff;padding:7px 12px;font-size:9.5pt;font-weight:700;margin-bottom:3px;margin-top:10px;border-radius:4px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.lss{background:#eee;color:#1A1A1A;padding:5px 12px;font-size:9.5pt;font-weight:600;margin-bottom:2px;margin-top:6px;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.kop{text-align:center;margin-bottom:14px;padding-bottom:12px;border-bottom:3px solid #1A1A1A}.kopn{font-size:13pt;font-weight:800;color:#1A1A1A}.kopa{font-size:9pt;color:#6B7280;margin-top:2px}.kopj{font-size:12pt;font-weight:800;color:#1A1A1A;margin-top:7px;text-transform:uppercase}.kops{font-size:9pt;color:#6B7280;margin-top:3px;border-top:1px solid #E8E0D8;padding-top:6px}.nomor-dok{display:inline-block;background:#FDF3E3;color:#8B5A0A;border:1px solid #C8973A;padding:2px 8px;font-size:9pt;border-radius:4px;font-family:monospace;margin-top:4px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.ttdw{margin-top:24px;padding-top:14px;border-top:1px dashed #ccc;page-break-inside:avoid}.ttdkota{text-align:right;font-size:10pt;margin-bottom:16px;color:#374151;font-style:italic}.ttdgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:16px}.ttdcol{border:1px solid #E8E0D8;border-radius:8px;padding:16px 24px;text-align:center}.ttdlbl{font-size:10pt;font-weight:600;color:#6B7280;margin-bottom:5px;line-height:1.5}.ttdsp{height:90pt}.ttdname{font-size:11pt;font-weight:800;color:#1A1A1A;border-top:2px solid #1A1A1A;padding-top:6px;margin-top:3px}.ttdnip{font-size:9pt;color:#6B7280}.ttdkdbox{border:1px solid #E8E0D8;border-radius:8px;padding:16px 24px;text-align:center;max-width:380px;margin:0 auto}.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9pt;font-weight:600}.bm{background:#FDF0E8;color:#0A6048;-webkit-print-color-adjust:exact;print-color-adjust:exact}.bk{background:#FDECEA;color:#C0392B;-webkit-print-color-adjust:exact;print-color-adjust:exact}.bu{background:#F0EBF8;color:#7B5EA7;-webkit-print-color-adjust:exact;print-color-adjust:exact}.calk-note{font-size:10.5pt;line-height:1.9;padding:10px 12px;background:#FAF8F5;border-radius:4px;border-left:3px solid #D97757;margin-bottom:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.calk-section{margin-bottom:16px;page-break-inside:avoid}.info-box{background:#F0EBF8;border:1px solid #c5ddf5;border-radius:6px;padding:10px 12px;font-size:10pt;color:#7B5EA7;line-height:1.7;-webkit-print-color-adjust:exact;print-color-adjust:exact}.warn-box{background:#FDF3E3;border:1px solid #ead5a6;border-radius:6px;padding:10px 12px;font-size:10pt;color:#7a5a1e;line-height:1.7;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tfoot-row td{background:#F0F0F0;font-weight:700;border-top:2px solid #1A1A1A;-webkit-print-color-adjust:exact;print-color-adjust:exact}.calk-compliance li{font-size:10pt;line-height:1.9;padding:3px 0;display:flex;align-items:flex-start;gap:6px}.calk-compliance li::before{content:"v";color:#D97757;font-weight:800}.nav,.topbar,.sidebar,.btn,.frow,.btabs,.sgrid,.form-kas,.page-hdr,.stat,.pbar,.nb,.admin-only,.btn-group,.mob-nav,.mob-more-menu,.mob-more-overlay{display:none!important}</style></head><body>'+content+'</body></html>');
   w.document.close();
   setTimeout(function(){w.print();},800);
 }
@@ -3044,44 +3044,44 @@ if(document.readyState==='loading'){
 <div id="onboard-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,27,42,.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
   <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative">
     <div id="ob-step-1" style="display:block">
-      <div style="width:36px;height:36px;border-radius:50%;background:#0E7C65;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">1</div>
-      <div style="font-size:16px;font-weight:700;color:#0D1B2A;margin-bottom:6px">Selamat Datang di SAK BUMDes!</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:#D97757;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">1</div>
+      <div style="font-size:16px;font-weight:700;color:#1A1A1A;margin-bottom:6px">Selamat Datang di SAK BUMDes!</div>
       <div style="font-size:12.5px;color:#6B7280;line-height:1.7;margin-bottom:18px">Lengkapi profil BUMDes Anda. Informasi ini akan muncul di semua laporan.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nama BUMDes</label><input id="ob-nama" type="text" placeholder="BUMDes WIDYATAMA" style="width:100%;padding:8px 10px;border:1.5px solid #E5E8ED;border-radius:8px;font-size:13px;outline:none"></div>
-        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nama Desa</label><input id="ob-desa" type="text" placeholder="Kaligowong" style="width:100%;padding:8px 10px;border:1.5px solid #E5E8ED;border-radius:8px;font-size:13px;outline:none"></div>
-        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Direktur</label><input id="ob-dir" type="text" placeholder="Nama lengkap" style="width:100%;padding:8px 10px;border:1.5px solid #E5E8ED;border-radius:8px;font-size:13px;outline:none"></div>
-        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Bendahara</label><input id="ob-ben" type="text" placeholder="Nama lengkap" style="width:100%;padding:8px 10px;border:1.5px solid #E5E8ED;border-radius:8px;font-size:13px;outline:none"></div>
+        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nama BUMDes</label><input id="ob-nama" type="text" placeholder="BUMDes WIDYATAMA" style="width:100%;padding:8px 10px;border:1.5px solid #E8E0D8;border-radius:8px;font-size:13px;outline:none"></div>
+        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nama Desa</label><input id="ob-desa" type="text" placeholder="Kaligowong" style="width:100%;padding:8px 10px;border:1.5px solid #E8E0D8;border-radius:8px;font-size:13px;outline:none"></div>
+        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Direktur</label><input id="ob-dir" type="text" placeholder="Nama lengkap" style="width:100%;padding:8px 10px;border:1.5px solid #E8E0D8;border-radius:8px;font-size:13px;outline:none"></div>
+        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Bendahara</label><input id="ob-ben" type="text" placeholder="Nama lengkap" style="width:100%;padding:8px 10px;border:1.5px solid #E8E0D8;border-radius:8px;font-size:13px;outline:none"></div>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button onclick="lewatiOnboard()" style="padding:8px 16px;border:1.5px solid #E5E8ED;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:#6B7280">Lewati</button>
-        <button onclick="obNext(1)" style="padding:8px 20px;border:none;border-radius:8px;background:#0E7C65;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Lanjut &rarr;</button>
+        <button onclick="lewatiOnboard()" style="padding:8px 16px;border:1.5px solid #E8E0D8;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:#6B7280">Lewati</button>
+        <button onclick="obNext(1)" style="padding:8px 20px;border:none;border-radius:8px;background:#D97757;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Lanjut &rarr;</button>
       </div>
     </div>
     <div id="ob-step-2" style="display:none">
-      <div style="width:36px;height:36px;border-radius:50%;background:#0E7C65;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">2</div>
-      <div style="font-size:16px;font-weight:700;color:#0D1B2A;margin-bottom:6px">Modal &amp; Saldo Awal</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:#D97757;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">2</div>
+      <div style="font-size:16px;font-weight:700;color:#1A1A1A;margin-bottom:6px">Modal &amp; Saldo Awal</div>
       <div style="font-size:12.5px;color:#6B7280;line-height:1.7;margin-bottom:18px">Isi saldo kas yang dikuasai Bendahara dan modal yang disetor Desa.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Saldo Kas Awal (Rp)</label><input id="ob-saldo" type="number" placeholder="0" style="width:100%;padding:8px 10px;border:1.5px solid #E5E8ED;border-radius:8px;font-size:13px;outline:none"></div>
-        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Modal Penyertaan Desa (Rp)</label><input id="ob-modal" type="number" placeholder="0" style="width:100%;padding:8px 10px;border:1.5px solid #E5E8ED;border-radius:8px;font-size:13px;outline:none"></div>
+        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Saldo Kas Awal (Rp)</label><input id="ob-saldo" type="number" placeholder="0" style="width:100%;padding:8px 10px;border:1.5px solid #E8E0D8;border-radius:8px;font-size:13px;outline:none"></div>
+        <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Modal Penyertaan Desa (Rp)</label><input id="ob-modal" type="number" placeholder="0" style="width:100%;padding:8px 10px;border:1.5px solid #E8E0D8;border-radius:8px;font-size:13px;outline:none"></div>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button onclick="obPrev(2)" style="padding:8px 16px;border:1.5px solid #E5E8ED;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:#6B7280">&larr; Kembali</button>
-        <button onclick="obNext(2)" style="padding:8px 20px;border:none;border-radius:8px;background:#0E7C65;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Lanjut &rarr;</button>
+        <button onclick="obPrev(2)" style="padding:8px 16px;border:1.5px solid #E8E0D8;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;color:#6B7280">&larr; Kembali</button>
+        <button onclick="obNext(2)" style="padding:8px 20px;border:none;border-radius:8px;background:#D97757;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Lanjut &rarr;</button>
       </div>
     </div>
     <div id="ob-step-3" style="display:none">
-      <div style="width:36px;height:36px;border-radius:50%;background:#0E7C65;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">3</div>
-      <div style="font-size:16px;font-weight:700;color:#0D1B2A;margin-bottom:6px">Siap Digunakan!</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:#D97757;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">3</div>
+      <div style="font-size:16px;font-weight:700;color:#1A1A1A;margin-bottom:6px">Siap Digunakan!</div>
       <div style="font-size:12.5px;color:#6B7280;line-height:1.7;margin-bottom:14px">Data profil tersimpan. Mulai input transaksi di <strong>Kas Harian</strong>.</div>
-      <div style="background:#E8F5F1;border-radius:8px;padding:12px 14px;font-size:12px;color:#0E7C65;margin-bottom:16px;line-height:2">
+      <div style="background:#E8F5F1;border-radius:8px;padding:12px 14px;font-size:12px;color:#D97757;margin-bottom:16px;line-height:2">
         &#10003; <strong>Profil BUMDes</strong> tersimpan<br>
         &#10003; <strong>Saldo &amp; Modal</strong> tercatat<br>
         &#10003; <strong>6 Laporan Wajib</strong> siap digenerate
       </div>
       <div style="display:flex;justify-content:flex-end">
-        <button onclick="closeOnboard()" style="padding:10px 24px;border:none;border-radius:8px;background:#0E7C65;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Mulai &#128640;</button>
+        <button onclick="closeOnboard()" style="padding:10px 24px;border:none;border-radius:8px;background:#D97757;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Mulai &#128640;</button>
       </div>
     </div>
   </div>
