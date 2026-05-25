@@ -1020,12 +1020,6 @@ function cetakKwitansi(txId){
     +'body{font-family:"Times New Roman",serif;font-size:12pt;color:#000;background:#fff}'
     +'@page{size:A4 portrait;margin:15mm 20mm 15mm 25mm}'
     // KOP - identik dengan laporan
-    +'.kop{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:4px solid #0D1B2A;margin-bottom:16px}'
-    +'.kop img{width:80px;height:80px;object-fit:contain;flex-shrink:0}'
-    +'.kop-text{flex:1;text-align:center}'
-    +'.kop-bumdes{font-size:11pt;color:#374151;margin-bottom:2px}'
-    +'.kop-nama{font-size:20pt;font-weight:800;color:#0D1B2A;text-transform:uppercase;letter-spacing:1px;line-height:1.1}'
-    +'.kop-alamat{font-size:9pt;color:#6B7280;margin-top:4px}'
     // JUDUL
     +'.judul{text-align:center;margin:16px 0 14px}'
     +'.judul h2{font-size:14pt;font-weight:700;text-transform:uppercase;letter-spacing:2px;border:2.5px solid #0D1B2A;display:inline-block;padding:5px 28px;border-radius:2px}'
@@ -1052,14 +1046,13 @@ function cetakKwitansi(txId){
     +'@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
     +'</style></head><body>'
 
-    // ── KOP SURAT (identik dengan laporan) ──
-    +'<div class="kop">'
-    +'<img src="'+imgSrc+'" alt="Logo">'
-    +'<div class="kop-text">'
-    +'<div class="kop-bumdes">BADAN USAHA MILIK DESA (BUMDes)</div>'
-    +'<div class="kop-nama">'+((p.nama||'').toUpperCase())+'</div>'
-    +'<div class="kop-alamat">Desa '+(p.desa||'')+' &bull; Kec. '+(p.kec||'')+' &bull; Kab. '+(p.kab||'')+'</div>'
-    +'</div></div>'
+    // ── KOP SURAT - Logo tengah, teks tengah ──
+    +'<div style="text-align:center;padding-bottom:12px;border-bottom:3px solid #0D1B2A;margin-bottom:16px">'
+    +'<img src="'+imgSrc+'" alt="Logo" style="width:80px;height:80px;object-fit:contain;display:block;margin:0 auto 8px">'
+    +'<div style="font-size:11pt;color:#374151;font-weight:400;margin-bottom:2px">BADAN USAHA MILIK DESA (BUMDes)</div>'
+    +'<div style="font-size:16pt;font-weight:800;color:#0E7C65;letter-spacing:0.5px;margin-bottom:4px">BUMDes '+(p.nama||'WIDYATAMA')+'</div>'
+    +'<div style="font-size:9pt;color:#6B7280">Desa '+(p.desa||'')+' &middot; Kecamatan '+(p.kec||'')+' &middot; Kabupaten '+(p.kab||'')+' &middot; Provinsi Jawa Tengah</div>'
+    +'</div>'
 
     // ── JUDUL ──
     +'<div class="judul">'
