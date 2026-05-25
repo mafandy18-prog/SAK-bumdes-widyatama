@@ -1048,9 +1048,9 @@ function cetakKwitansi(txId){
 
     // ── KOP SURAT - Logo tengah, teks tengah ──
     +'<div style="text-align:center;padding-bottom:12px;border-bottom:3px solid #0D1B2A;margin-bottom:16px">'
-    +'<img src="'+imgSrc+'" alt="Logo" style="width:80px;height:80px;object-fit:contain;display:block;margin:0 auto 8px">'
+    +'<img src="'+imgSrc+'" alt="Logo" style="width:80px;height:80px;object-fit:cover;display:block;margin:0 auto 8px;border-radius:50%">'
     +'<div style="font-size:11pt;color:#374151;font-weight:400;margin-bottom:2px">BADAN USAHA MILIK DESA (BUMDes)</div>'
-    +'<div style="font-size:16pt;font-weight:800;color:#0E7C65;letter-spacing:0.5px;margin-bottom:4px">BUMDes '+(p.nama||'WIDYATAMA')+'</div>'
+    +'<div style="font-size:16pt;font-weight:800;color:#0E7C65;letter-spacing:0.5px;margin-bottom:4px">'+(p.nama||'BUMDes WIDYATAMA')+'</div>'
     +'<div style="font-size:9pt;color:#6B7280">Desa '+(p.desa||'')+' &middot; Kecamatan '+(p.kec||'')+' &middot; Kabupaten '+(p.kab||'')+' &middot; Provinsi Jawa Tengah</div>'
     +'</div>'
 
