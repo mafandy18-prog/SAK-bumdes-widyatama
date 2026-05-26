@@ -1325,7 +1325,31 @@ function renderDashboard(){
     return{l:a.n.replace('Penerimaan ','').replace('Unit ',''),v:L.pU[a.k]||0,c:colorList[i%colorList.length]};
   });
   var maxU=Math.max.apply(null,units.map(function(u){return u.v;}).concat([1]));
+  // ── STAT CARDS DASHBOARD ──
+  var statCards=document.getElementById('dash-stat-cards');
+  if(statCards){
+    var grossMarginD=L.tp>0?((L.laba/L.tp)*100).toFixed(1):'0';
+    var pct=(p.phu&&p.phu[0]?p.phu[0].p:25);
+    var padesD=Math.round(L.laba*(pct/100));
+    var stats=[
+      {icon:'ti-trending-up', lbl:'Total Pendapatan', val:fmt(L.tp),   cls:'si-orange', color:'var(--teal)'},
+      {icon:'ti-trending-down',lbl:'Total Beban',      val:fmt(L.tb),   cls:'si-red',    color:'var(--red)'},
+      {icon:'ti-chart-bar',   lbl:'Laba Bersih',       val:fmt(L.laba), cls:'si-gold',   color:'var(--gold)'},
+      {icon:'ti-cash',        lbl:'Saldo Kas Akhir',   val:fmt(sK),     cls:'si-orange', color:'var(--teal)'},
+      {icon:'ti-percentage',  lbl:'Gross Margin',      val:grossMarginD+'%', cls:'si-blue', color:'var(--blue)'},
+      {icon:'ti-home',        lbl:'PADes ke Desa',     val:fmt(padesD), cls:'si-gold',   color:'var(--gold)'},
+    ];
+    var statHTML='<div class="sgrid">';
+    stats.forEach(function(s){
+      statHTML+='<div class="stat"><div class="stat-icon '+s.cls+'"><i class="ti '+s.icon+'"></i></div>'
+        +'<div class="sl">'+s.lbl+'</div>'
+        +'<div class="sv" style="color:'+s.color+'">'+s.val+'</div></div>';
+    });
+    statHTML+='</div>';
+    statCards.innerHTML=statHTML;
+  }
 
+  
   // Format nilai: pakai fmt() tapi font-size lebih kecil agar tidak terpotong
   var unitHtml='<div style="padding:0">';
   units.forEach(function(u){
@@ -1945,7 +1969,7 @@ function renderIkhtisar(){
     // Container utama
     var el=document.getElementById('ikhtisar-content');
     if(!el)return;
-    el.innerHTML=kop('REKAPITULASI','Tahun '+(DB.p.tahun||2026));
+    el.innerHTML='';
 
     var card=document.createElement('div');
     card.className='card';
@@ -3289,6 +3313,47 @@ if(document.readyState==='loading'){
         <div class="btabs" id="ak-tabs"></div><div id="ak-content"></div>
       </div>
       <!-- EKUITAS -->
+      <!-- LABA RUGI -->
+      <div class="pg" id="pg-lrc">
+        <div class="page-hdr">
+          <div class="page-hdr-row">
+            <div><h2>Laporan Laba Rugi</h2><p>Pendapatan &amp; beban periode berjalan</p></div>
+            <div class="btn-group">
+              <button class="btn be bsm" onclick="doPrint('lrc')"><i class="ti ti-printer"></i> Cetak</button>
+            </div>
+          </div>
+          <div class="btabs" id="lr-tabs"></div>
+        </div>
+        <div id="lrc-content"></div>
+      </div>
+
+      <!-- ARUS KAS -->
+      <div class="pg" id="pg-akc">
+        <div class="page-hdr">
+          <div class="page-hdr-row">
+            <div><h2>Laporan Arus Kas</h2><p>Arus kas masuk &amp; keluar</p></div>
+            <div class="btn-group">
+              <button class="btn be bsm" onclick="doPrint('akc')"><i class="ti ti-printer"></i> Cetak</button>
+            </div>
+          </div>
+          <div class="btabs" id="ak-tabs"></div>
+        </div>
+        <div id="akc-content"></div>
+      </div>
+
+      <!-- HASIL USAHA -->
+      <div class="pg" id="pg-hasilusaha">
+        <div class="page-hdr">
+          <div class="page-hdr-row">
+            <div><h2>Laporan Hasil Usaha</h2><p>Hasil usaha per unit &amp; distribusi</p></div>
+            <div class="btn-group">
+              <button class="btn be bsm" onclick="doPrint('hasilusaha')"><i class="ti ti-printer"></i> Cetak</button>
+            </div>
+          </div>
+        </div>
+        <div id="hasilusaha-content"></div>
+      </div>
+
       <div class="pg" id="pg-ekuitas">
         <div class="page-hdr"><div class="page-hdr-row"><div><h2>Laporan Perubahan Ekuitas</h2><p>Mutasi modal dan laba ditahan</p></div><div class="btn-group"><button class="btn bg2b bsm" onclick="doPrint('ekuitas')"><i class="ti ti-printer"></i> Cetak</button></div></div></div>
         <div id="ekuitas-content"></div>
