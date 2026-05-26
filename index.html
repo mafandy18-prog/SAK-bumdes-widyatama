@@ -1935,24 +1935,25 @@ function renderCaLK(){
 // ==================================================
 function renderIkhtisar(){
   try{
-    const p=DB.p, L=calc();
-    const tahun=p.tahun||2026;
+    var p=DB.p;
+    var L=calc();
+    var tahun=p.tahun||2026;
     var asetListI=getAsetList();
     var susut=asetListI.reduce(function(s,a){return s+hitungAkumSusut(a,tahun);},0);
     var bersih=asetListI.reduce(function(s,a){return s+(a.nilai||0);},0)-susut;
-    const sK=(p.saldo||0)+L.tp-L.tb;
-    const totalAset=sK+bersih;
-    const ekuitas=(p.modal||0)+(p.ld||0)+L.laba-susut;
-    const pct=(p.phu&&p.phu[0]?p.phu[0].p:25);
-    const pades=L.laba*(pct/100);
-    const laba_after=L.laba-pades;
-    const grossMargin=L.tp>0?((L.laba/L.tp)*100).toFixed(1):'0';
+    var sK=Math.round((p.saldo||0)+L.tp-L.tb);
+    var totalAset=sK+bersih;
+    var ekuitas=Math.round((p.modal||0)+(p.ld||0)+L.laba-susut);
+    var pct=(p.phu&&p.phu[0]?p.phu[0].p:25);
+    var pades=Math.round(L.laba*(pct/100));
+    var laba_after=L.laba-pades;
+    var grossMargin=L.tp>0?((L.laba/L.tp)*100).toFixed(1):'0';
 
     // Data bulanan
     var blnData=[];
     for(var i=0;i<12;i++){
-      var k=tahun+'-'+(i<9?'0':'')+(i+1);
-      var Lb=calc(k);
+      var bk=tahun+'-'+(i<9?'0':'')+(i+1);
+      var Lb=calc(bk);
       blnData.push({b:BULAN[i],m:Lb.tp,k:Lb.tb,l:Lb.laba});
     }
     var maxBar=1;
@@ -1962,37 +1963,13 @@ function renderIkhtisar(){
     }
     var bln_max_pend=blnData.reduce(function(a,b){return b.m>a.m?b:a;},{b:'-',m:0});
     var aktif_bln=blnData.filter(function(b){return b.m>0;}).length;
+
+    // Unit data
     var unitPend=getUnitPendapatan();
     var unitArr=Object.entries(unitPend).sort(function(a,b){return b[1]-a[1];});
     var topUnit=unitArr.length>0?unitArr[0]:['-',0];
 
-    // Container utama
-    var el=document.getElementById('ikhtisar-content');
-    if(!el)return;
-    el.innerHTML='';
-
-    // Build sebagai string HTML untuk kompatibilitas doPrint
-    var cardHTML=kop('IKHTISAR LAPORAN KEUANGAN','Tahun '+tahun,'BUM-IKH/'+tahun+'/001');
-    cardHTML+='<div class="card">';
-
-    // -- BAGIAN I: KPI - pakai string HTML agar ikut ter-capture doPrint
-    cardHTML+='<div class="ls">I. IKHTISAR KINERJA KEUANGAN TAHUN '+tahun+'</div>'
-      +'<div class="sgrid" style="margin:12px 0 16px">'
-      +'<div class="stat" style="padding:12px"><div class="stat-icon si-orange"><i class="ti ti-trending-up"></i></div><div class="sl">Total Pendapatan</div><div class="sv" style="color:var(--teal)">'+fmt(L.tp)+'</div></div>'
-      +'<div class="stat" style="padding:12px"><div class="stat-icon si-red"><i class="ti ti-trending-down"></i></div><div class="sl">Total Beban</div><div class="sv" style="color:var(--red)">'+fmt(L.tb)+'</div></div>'
-      +'<div class="stat" style="padding:12px"><div class="stat-icon si-gold"><i class="ti ti-chart-bar"></i></div><div class="sl">Laba Bersih</div><div class="sv" style="color:var(--gold)">'+fmt(L.laba)+'</div></div>'
-      +'<div class="stat" style="padding:12px"><div class="stat-icon si-orange"><i class="ti ti-cash"></i></div><div class="sl">Saldo Kas Akhir</div><div class="sv" style="color:var(--teal)">'+fmt(sK)+'</div></div>'
-      +'<div class="stat" style="padding:12px"><div class="stat-icon si-blue"><i class="ti ti-percentage"></i></div><div class="sl">Gross Margin</div><div class="sv" style="color:var(--blue)">'+grossMargin+'%</div></div>'
-      +'<div class="stat" style="padding:12px"><div class="stat-icon si-gold"><i class="ti ti-home"></i></div><div class="sl">PADes ke Desa</div><div class="sv" style="color:var(--gold)">'+fmt(pades)+'</div></div>'
-      +'</div>';
-
-    // -- BAGIAN II: Grafik Bar -----------------------
     // Build SVG bars
-    var maxBar=1;
-    for(var bi2=0;bi2<blnData.length;bi2++){
-      if(blnData[bi2].m>maxBar) maxBar=blnData[bi2].m;
-      if(blnData[bi2].k>maxBar) maxBar=blnData[bi2].k;
-    }
     var svgBars='';
     for(var bi=0;bi<blnData.length;bi++){
       var d=blnData[bi];
@@ -2003,90 +1980,125 @@ function renderIkhtisar(){
       svgBars+='<rect x="'+x+'" y="'+(70-hk)+'" width="8" height="'+hk+'" fill="#C0392B" rx="2" opacity="0.7"/>';
       svgBars+='<text x="'+(x-4)+'" y="83" text-anchor="middle" font-size="8" fill="#8A8A8A">'+d.b.substring(0,3)+'</text>';
     }
-    cardHTML+='<div class="lss" style="margin-top:4px">Grafik Pendapatan &amp; Beban per Bulan</div>';
 
-    cardHTML+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+'<svg width="100%" viewBox="0 0 600 95" style="min-width:500px">'+svgBars+'<line x1="20" y1="70" x2="590" y2="70" stroke="#E8E0D8" stroke-width="0.5"/></svg>'
-      +'<div style="display:flex;gap:14px;justify-content:center;margin-top:6px;font-size:11px">'
-      +'<span><span style="display:inline-block;width:10px;height:10px;background:#D97757;border-radius:2px;margin-right:4px"></span>Pendapatan</span>'
-      +'<span><span style="display:inline-block;width:10px;height:10px;background:#C0392B;border-radius:2px;margin-right:4px"></span>Beban</span></div>'+'</div>';
-
-    // -- BAGIAN II: Analisis -------------------------
-    cardHTML+='<div class="ls" style="margin-top:8px">II. ANALISIS KINERJA</div>';
-
-    cardHTML+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">'+''
-      +'<div class="calk-note"><strong>Bulan Pendapatan Tertinggi</strong><br>'+bln_max_pend.b+' \u2014 '+fmt(bln_max_pend.m)+'</div>'
-      +'<div class="calk-note"><strong>Unit Kontributor Terbesar</strong><br>'+topUnit[0]+' \u2014 '+fmt(topUnit[1])+'</div>'
-      +'<div class="calk-note"><strong>Gross Margin</strong><br>'+grossMargin+'%</div>'
-      +'<div class="calk-note"><strong>Bulan Aktif Beroperasi</strong><br>'+aktif_bln+' dari 12 bulan</div>'+'</div>';
-
-    // -- BAGIAN III: Unit Usaha ----------------------
+    // tbl3rows - unit usaha
     var tbl3rows='';
     for(var ui=0;ui<unitArr.length;ui++){
       var u=unitArr[ui];
       var upct=L.tp>0?((u[1]/L.tp)*100).toFixed(1):'0';
-      tbl3rows+='<tr><td>'+(ui+1)+'</td><td>'+u[0]+'</td>'
+      tbl3rows+='<tr>'
+        +'<td>'+(ui+1)+'</td>'
+        +'<td>'+u[0]+'</td>'
         +'<td style="text-align:right;font-family:var(--mono)">'+fmt(u[1])+'</td>'
-        +'<td style="text-align:right">'+upct+'%</td></tr>';
+        +'<td style="text-align:right">'+upct+'%</td>'
+        +'</tr>';
     }
-    cardHTML+='<div class="ls" style="margin-top:8px">III. PENDAPATAN PER UNIT USAHA</div>';
 
-    cardHTML+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+'<table class="calk-tbl"><thead><tr><th>#</th><th>Unit</th><th style="text-align:right">Pendapatan</th><th style="text-align:right">%</th></tr></thead>'
-      +'<tbody>'+tbl3rows+'<tr class="tfoot-row"><td colspan="2">TOTAL</td>'
-      +'<td style="text-align:right;font-family:var(--mono)">'+fmt(L.tp)+'</td>'
-      +'<td style="text-align:right">100%</td></tr></tbody></table>'+'</div>';
-
-    // -- BAGIAN IV: Posisi Keuangan ------------------
-    cardHTML+='<div class="ls" style="margin-top:8px">IV. POSISI KEUANGAN PER 31 DES '+tahun+'</div>';
-
-    cardHTML+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">'+''
-      +'<div><div class="lss">Aset</div>'
-      +'<div class="lr"><span>Kas &amp; Setara Kas</span><span style="font-family:var(--mono)">'+fmt(sK)+'</span></div>'
-      +'<div class="lr"><span>Aset Tetap Bersih</span><span style="font-family:var(--mono)">'+fmt(bersih)+'</span></div>'
-      +'<div class="lr lt ltg">Total Aset<span style="font-family:var(--mono)">'+fmt(totalAset)+'</span></div></div>'
-      +'<div><div class="lss">Ekuitas</div>'
-      +'<div class="lr"><span>Modal Penyertaan</span><span style="font-family:var(--mono)">'+fmt(p.modal||0)+'</span></div>'
-      +'<div class="lr"><span>Laba Ditahan</span><span style="font-family:var(--mono)">'+fmt(p.ld||0)+'</span></div>'
-      +'<div class="lr"><span>Laba Tahun Ini</span><span style="font-family:var(--mono)">'+fmt(L.laba)+'</span></div>'
-      +'<div class="lr"><span>Akum. Penyusutan</span><span style="color:var(--red);font-family:var(--mono)">('+fmt(susut)+')</span></div>'
-      +'<div class="lr lt ltg">Total Ekuitas<span style="font-family:var(--mono)">'+fmt(ekuitas)+'</span></div></div>'+'</div>';
-
-    // -- BAGIAN V: PHU -------------------------------
+    // tbl5rows - PHU
     var tbl5rows='';
-    var phuList=DB.p.phu||[{l:'PADes',p:25},{l:'Cadangan',p:25},{l:'Operasional',p:25},{l:'Modal',p:25}];
-    var totalPHUpct=phuList.reduce(function(s,x){return s+(x.p||0);},0);
+    var phuList=p.phu||[{l:'PADes',p:25},{l:'Cadangan',p:25},{l:'Operasional',p:25},{l:'Modal',p:25}];
     for(var pi=0;pi<phuList.length;pi++){
       var ph=phuList[pi];
       var phjml=Math.round(L.laba*(ph.p/100));
-      tbl5rows+='<tr><td>'+ph.l+'</td>'
+      tbl5rows+='<tr>'
+        +'<td>'+ph.l+'</td>'
         +'<td style="text-align:right">'+ph.p+'%</td>'
-        +'<td style="text-align:right;font-family:var(--mono)">'+fmt(phjml)+'</td></tr>';
+        +'<td style="text-align:right;font-family:var(--mono)">'+fmt(phjml)+'</td>'
+        +'</tr>';
     }
-    cardHTML+='<div class="ls" style="margin-top:8px">V. DISTRIBUSI HASIL USAHA</div>';
 
-    cardHTML+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+'<table class="calk-tbl"><thead><tr><th>Alokasi</th><th style="text-align:right">%</th><th style="text-align:right">Jumlah</th></tr></thead>'
-      +'<tbody>'+tbl5rows+'<tr class="tfoot-row"><td>TOTAL</td>'
-      +'<td style="text-align:right">100%</td>'
-      +'<td style="text-align:right;font-family:var(--mono)">'+fmt(L.laba)+'</td></tr></tbody></table>'+'</div>';
+    // Narasi
+    var narasiTxt='Pada tahun <strong>'+tahun+'</strong>, BUMDes <strong>'+p.nama+'</strong> '
+      +(L.laba>0?'berhasil membukukan <strong>laba bersih '+fmt(L.laba)+'</strong>':'mengalami kerugian sebesar <strong>'+fmt(Math.abs(L.laba))+'</strong>')
+      +' dari total pendapatan <strong>'+fmt(L.tp)+'</strong>.'
+      +' Total aset tercatat <strong>'+fmt(totalAset)+'</strong>,'
+      +' ekuitas <strong>'+fmt(ekuitas)+'</strong>, saldo kas <strong>'+fmt(sK)+'</strong>.';
 
-    // -- BAGIAN VI: Narasi Musdes --------------------
-    cardHTML+='<div class="ls" style="margin-top:8px">VI. RINGKASAN UNTUK MUSYAWARAH DESA</div>';
+    // Aset posisi
+    var posNeraca='<div class="lr"><span>Kas dan Setara Kas</span><span>'+fmt(sK)+'</span></div>'
+      +'<div class="lr"><span>Aset Tetap Bersih</span><span>'+fmt(bersih)+'</span></div>'
+      +'<div class="lr lt ltg"><span>Total Aset</span><span>'+fmt(totalAset)+'</span></div>'
+      +'<div class="lr"><span>Modal</span><span>'+fmt(p.modal||0)+'</span></div>'
+      +'<div class="lr"><span>Laba Ditahan</span><span>'+fmt(p.ld||0)+'</span></div>'
+      +'<div class="lr"><span>Laba Tahun Berjalan</span><span>'+fmt(L.laba)+'</span></div>'
+      +'<div class="lr lt ltb"><span>Total Ekuitas</span><span>'+fmt(ekuitas)+'</span></div>';
 
-    var unitNarasi=unitArr.map(function(u){return 'unit '+u[0];}).join(', ')||'berbagai unit usaha';
-    cardHTML+=''
-      +'Pada tahun '+tahun+', BUMDes <strong>'+(p.nama||'WIDYATAMA')+'</strong> Desa '+(p.desa||'\u2013')
-      +' memperoleh total <strong>pendapatan sebesar '+fmt(L.tp)+'</strong> dari '+unitNarasi+'. '
-      +'Total beban operasional sebesar <strong>'+fmt(L.tb)+'</strong>, sehingga diperoleh '
-      +'<strong>laba bersih '+fmt(L.laba)+'</strong> (gross margin '+grossMargin+'%).<br><br>'
-      +'BUMDes menyetorkan <strong>PADes sebesar '+fmt(pades)+'</strong> ('+pct+'%) ke Kas Desa '
-      +'sesuai Pasal 15 Kepmendes PDTT No. 136/2022. Sisa laba <strong>'+fmt(laba_after)+'</strong> '
-      +'dialokasikan untuk pengembangan usaha dan cadangan modal.<br><br>'
-      +'Per 31 Desember '+tahun+', total aset <strong>'+fmt(totalAset)+'</strong>, '
-      +'ekuitas <strong>'+fmt(ekuitas)+'</strong>, saldo kas <strong>'+fmt(sK)+'</strong>.';
+    // ── BUILD HTML ──
+    var el=document.getElementById('ikhtisar-content');
+    if(!el)return;
 
-    // -- TTD ----------------------------------------
-    cardHTML+=ttd();
-    cardHTML+='</div>';
-    el.innerHTML=cardHTML;
+    var H=kop('IKHTISAR LAPORAN KEUANGAN','Tahun '+tahun,'BUM-IKH/'+tahun+'/001');
+
+    // I. STAT CARDS
+    H+='<div class="ls">I. IKHTISAR KINERJA KEUANGAN TAHUN '+tahun+'</div>';
+    H+='<div class="sgrid" style="margin:14px 0 18px">';
+    H+='<div class="stat"><div class="stat-icon si-orange"><i class="ti ti-trending-up"></i></div><div class="sl">TOTAL PENDAPATAN</div><div class="sv" style="color:var(--teal)">'+fmt(L.tp)+'</div></div>';
+    H+='<div class="stat"><div class="stat-icon si-red"><i class="ti ti-trending-down"></i></div><div class="sl">TOTAL BEBAN</div><div class="sv" style="color:var(--red)">'+fmt(L.tb)+'</div></div>';
+    H+='<div class="stat"><div class="stat-icon si-gold"><i class="ti ti-chart-bar"></i></div><div class="sl">LABA BERSIH</div><div class="sv" style="color:var(--gold)">'+fmt(L.laba)+'</div></div>';
+    H+='<div class="stat"><div class="stat-icon si-orange"><i class="ti ti-cash"></i></div><div class="sl">SALDO KAS AKHIR</div><div class="sv" style="color:var(--teal)">'+fmt(sK)+'</div></div>';
+    H+='<div class="stat"><div class="stat-icon si-blue"><i class="ti ti-percentage"></i></div><div class="sl">GROSS MARGIN</div><div class="sv" style="color:var(--blue)">'+grossMargin+'%</div></div>';
+    H+='<div class="stat"><div class="stat-icon si-gold"><i class="ti ti-home"></i></div><div class="sl">PADes KE DESA</div><div class="sv" style="color:var(--gold)">'+fmt(pades)+'</div></div>';
+    H+='</div>';
+
+    // II. GRAFIK
+    H+='<div class="ls" style="margin-top:8px">II. GRAFIK PENDAPATAN &amp; BEBAN PER BULAN</div>';
+    H+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0">';
+    H+='<svg width="100%" viewBox="0 0 600 95" style="min-width:500px">';
+    H+=svgBars;
+    H+='<line x1="20" y1="70" x2="590" y2="70" stroke="#E8E0D8" stroke-width="0.5"/>';
+    H+='</svg>';
+    H+='<div style="display:flex;gap:14px;justify-content:center;font-size:11px;margin-top:4px">';
+    H+='<span><span style="display:inline-block;width:10px;height:10px;background:#D97757;border-radius:2px;margin-right:4px"></span>Pendapatan</span>';
+    H+='<span><span style="display:inline-block;width:10px;height:10px;background:#C0392B;border-radius:2px;margin-right:4px"></span>Beban</span>';
+    H+='</div></div>';
+
+    // II.B ANALISIS
+    H+='<div class="ls" style="margin-top:8px">III. ANALISIS KINERJA</div>';
+    H+='<div class="sgrid" style="margin:10px 0 14px">';
+    H+='<div class="stat"><div style="font-weight:700;margin-bottom:4px;font-size:11.5px">Bulan Pendapatan Tertinggi</div><div style="color:var(--teal)">'+bln_max_pend.b+' &mdash; '+fmt(bln_max_pend.m)+'</div></div>';
+    H+='<div class="stat"><div style="font-weight:700;margin-bottom:4px;font-size:11.5px">Unit Kontributor Terbesar</div><div style="color:var(--teal)">'+topUnit[0]+' &mdash; '+fmt(topUnit[1])+'</div></div>';
+    H+='<div class="stat"><div style="font-weight:700;margin-bottom:4px;font-size:11.5px">Gross Margin</div><div style="color:var(--blue)">'+grossMargin+'%</div></div>';
+    H+='<div class="stat"><div style="font-weight:700;margin-bottom:4px;font-size:11.5px">Bulan Aktif Beroperasi</div><div>'+aktif_bln+' dari 12 bulan</div></div>';
+    H+='</div>';
+
+    // IV. PENDAPATAN PER UNIT
+    H+='<div class="ls" style="margin-top:8px">IV. PENDAPATAN PER UNIT USAHA</div>';
+    H+='<div style="overflow-x:auto;margin:10px 0">';
+    H+='<table class="calk-tbl"><thead><tr>';
+    H+='<th>#</th><th>Unit Usaha</th>';
+    H+='<th style="text-align:right">Pendapatan</th>';
+    H+='<th style="text-align:right">%</th>';
+    H+='</tr></thead><tbody>';
+    H+=tbl3rows;
+    H+='<tr class="tfoot-row"><td colspan="2">TOTAL</td>';
+    H+='<td style="text-align:right;font-family:var(--mono)">'+fmt(L.tp)+'</td>';
+    H+='<td style="text-align:right">100%</td></tr>';
+    H+='</tbody></table></div>';
+
+    // V. POSISI KEUANGAN
+    H+='<div class="ls" style="margin-top:8px">V. POSISI KEUANGAN</div>';
+    H+='<div style="margin:10px 0">'+posNeraca+'</div>';
+
+    // VI. DISTRIBUSI PHU
+    H+='<div class="ls" style="margin-top:8px">VI. DISTRIBUSI HASIL USAHA (PHU)</div>';
+    H+='<div style="overflow-x:auto;margin:10px 0">';
+    H+='<table class="calk-tbl"><thead><tr>';
+    H+='<th>Alokasi</th><th style="text-align:right">%</th><th style="text-align:right">Jumlah</th>';
+    H+='</tr></thead><tbody>';
+    H+=tbl5rows;
+    H+='<tr class="tfoot-row"><td>TOTAL</td>';
+    H+='<td style="text-align:right">'+phuList.reduce(function(s,x){return s+(x.p||0);},0)+'%</td>';
+    H+='<td style="text-align:right;font-family:var(--mono)">'+fmt(pades)+'</td></tr>';
+    H+='</tbody></table></div>';
+
+    // VII. NARASI
+    H+='<div class="ls" style="margin-top:8px">VII. RINGKASAN NARATIF</div>';
+    H+='<div class="calk-note" style="margin:10px 0">'+narasiTxt+'</div>';
+
+    // TTD
+    H+=ttd();
+
+    el.innerHTML=H;
 
   }catch(err){
     var el=document.getElementById('ikhtisar-content');
@@ -2094,9 +2106,6 @@ function renderIkhtisar(){
     console.error('renderIkhtisar error:',err);
   }
 }
-
-
-// Export Ikhtisar CSV
 function doPrint(page){
   var content=document.getElementById('pg-'+page).innerHTML;
   var w=window.open('','_blank','width=960,height=760');
