@@ -2114,11 +2114,11 @@ function renderIkhtisar(){
 function doPrint(page){
   var content;
   if(page==='ikhtisar'){
-    // Ikhtisar dibangun via JS - pakai buildIkhtisar() langsung
-    content=document.getElementById('pg-ikhtisar').innerHTML.replace(
-      '<div id="ikhtisar-content"></div>',
-      '<div id="ikhtisar-content">'+buildIkhtisar()+'</div>'
-    );
+    // Pastikan ikhtisar sudah di-render dulu
+    renderIkhtisar();
+    // Ambil konten yang sudah di-render dari DOM
+    var ikEl=document.getElementById('ikhtisar-content');
+    content=ikEl?ikEl.innerHTML:buildIkhtisar();
   } else {
     content=document.getElementById('pg-'+page).innerHTML;
   }
