@@ -2020,6 +2020,14 @@ function renderIkhtisar(){
       +'<div class="calk-note"><strong>Bulan Aktif Beroperasi</strong><br>'+aktif_bln+' dari 12 bulan</div>'+'</div>';
 
     // -- BAGIAN III: Unit Usaha ----------------------
+    var tbl3rows='';
+    for(var ui=0;ui<unitArr.length;ui++){
+      var u=unitArr[ui];
+      var upct=L.tp>0?((u[1]/L.tp)*100).toFixed(1):'0';
+      tbl3rows+='<tr><td>'+(ui+1)+'</td><td>'+u[0]+'</td>'
+        +'<td style="text-align:right;font-family:var(--mono)">'+fmt(u[1])+'</td>'
+        +'<td style="text-align:right">'+upct+'%</td></tr>';
+    }
     cardHTML+='<div class="ls" style="margin-top:8px">III. PENDAPATAN PER UNIT USAHA</div>';
 
     cardHTML+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+'<table class="calk-tbl"><thead><tr><th>#</th><th>Unit</th><th style="text-align:right">Pendapatan</th><th style="text-align:right">%</th></tr></thead>'
@@ -2043,6 +2051,16 @@ function renderIkhtisar(){
       +'<div class="lr lt ltg">Total Ekuitas<span style="font-family:var(--mono)">'+fmt(ekuitas)+'</span></div></div>'+'</div>';
 
     // -- BAGIAN V: PHU -------------------------------
+    var tbl5rows='';
+    var phuList=DB.p.phu||[{l:'PADes',p:25},{l:'Cadangan',p:25},{l:'Operasional',p:25},{l:'Modal',p:25}];
+    var totalPHUpct=phuList.reduce(function(s,x){return s+(x.p||0);},0);
+    for(var pi=0;pi<phuList.length;pi++){
+      var ph=phuList[pi];
+      var phjml=Math.round(L.laba*(ph.p/100));
+      tbl5rows+='<tr><td>'+ph.l+'</td>'
+        +'<td style="text-align:right">'+ph.p+'%</td>'
+        +'<td style="text-align:right;font-family:var(--mono)">'+fmt(phjml)+'</td></tr>';
+    }
     cardHTML+='<div class="ls" style="margin-top:8px">V. DISTRIBUSI HASIL USAHA</div>';
 
     cardHTML+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+'<table class="calk-tbl"><thead><tr><th>Alokasi</th><th style="text-align:right">%</th><th style="text-align:right">Jumlah</th></tr></thead>'
