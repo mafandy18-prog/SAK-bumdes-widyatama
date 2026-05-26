@@ -2085,6 +2085,8 @@ function renderIkhtisar(){
 
     // -- TTD ----------------------------------------
     cardHTML+=ttd();
+    cardHTML+='</div>';
+    el.innerHTML=cardHTML;
 
   }catch(err){
     var el=document.getElementById('ikhtisar-content');
