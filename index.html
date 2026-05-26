@@ -1987,6 +1987,22 @@ function renderIkhtisar(){
       +'</div>';
 
     // -- BAGIAN II: Grafik Bar -----------------------
+    // Build SVG bars
+    var maxBar=1;
+    for(var bi2=0;bi2<blnData.length;bi2++){
+      if(blnData[bi2].m>maxBar) maxBar=blnData[bi2].m;
+      if(blnData[bi2].k>maxBar) maxBar=blnData[bi2].k;
+    }
+    var svgBars='';
+    for(var bi=0;bi<blnData.length;bi++){
+      var d=blnData[bi];
+      var x=30+bi*47;
+      var hm=Math.round(d.m/maxBar*60);
+      var hk=Math.round(d.k/maxBar*60);
+      svgBars+='<rect x="'+(x-8)+'" y="'+(70-hm)+'" width="8" height="'+hm+'" fill="#D97757" rx="2"/>';
+      svgBars+='<rect x="'+x+'" y="'+(70-hk)+'" width="8" height="'+hk+'" fill="#C0392B" rx="2" opacity="0.7"/>';
+      svgBars+='<text x="'+(x-4)+'" y="83" text-anchor="middle" font-size="8" fill="#8A8A8A">'+d.b.substring(0,3)+'</text>';
+    }
     cardHTML+='<div class="lss" style="margin-top:4px">Grafik Pendapatan &amp; Beban per Bulan</div>';
 
     cardHTML+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+'<svg width="100%" viewBox="0 0 600 95" style="min-width:500px">'+svgBars+'<line x1="20" y1="70" x2="590" y2="70" stroke="#E8E0D8" stroke-width="0.5"/></svg>'
