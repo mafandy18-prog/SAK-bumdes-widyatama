@@ -1226,7 +1226,7 @@ function calc(fb){
 function kop(judul, sub, noDok=''){
   const p=DB.p;
   return`<div class="kop">
-    <img id="app-logo-img" src="${LOGO_SRC}" class="kop-logo-img" style="width:68px;height:68px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px;background:#000;" alt="Logo BUMDes Widyatama">
+    <img id="app-logo-img" src="" class="kop-logo-img" style="width:68px;height:68px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px;background:#000;" alt="Logo BUMDes Widyatama">
     <div class="kopn">BADAN USAHA MILIK DESA (BUMDes)</div>
     <div class="kopn" style="font-size:18px;color:var(--teal)">${p.nama||'WIDYATAMA'}</div>
     <div class="kopa">Desa ${p.desa} &middot; Kecamatan ${p.kec} &middot; Kabupaten ${p.kab} &middot; Provinsi Jawa Tengah</div>
@@ -1608,7 +1608,7 @@ function renderLRC(f){
     }
   }
 
-  document.getElementById('lrc-content').innerHTML=`<div class="card">${kop('LAPORAN LABA RUGI',sub,nomor)}
+  document.getElementById('lr-content').innerHTML=`<div class="card">${kop('LAPORAN LABA RUGI',sub,nomor)}
   <div class="ls">I. PENDAPATAN USAHA</div>
   ${pURows}
   <div class="lr lt ltg">TOTAL PENDAPATAN USAHA<span style="font-family:var(--mono)">${fmt(L.tp)}</span></div>
@@ -1658,7 +1658,7 @@ function renderAKC(f){
   }
   var padesRow=L.pades>0?'<div class="lr"><span>&nbsp;&nbsp;'+noUrut2+'. Setor PADes ke Kas Desa</span><span style="color:var(--red);font-family:var(--mono)">('+fmt(L.pades)+')</span></div>':'';
 
-  document.getElementById('akc-content').innerHTML=`<div class="card">${kop('LAPORAN ARUS KAS - Metode Langsung',sub)}
+  document.getElementById('ak-content').innerHTML=`<div class="card">${kop('LAPORAN ARUS KAS - Metode Langsung',sub)}
   <div class="ls">A. ARUS KAS DARI AKTIVITAS OPERASI</div>
   <div class="lss">Penerimaan</div>
   ${pRows}
@@ -2117,6 +2117,8 @@ function doPrint(page){
   // Render ulang konten terbaru
   var renderMap={
     neraca:renderNeraca,
+    labarugi:renderLR,
+    arukas:renderAK,
     lrc:function(){renderLRC('all');},
     akc:function(){renderAKC('all');},
     ekuitas:renderEkuitas,
@@ -2130,15 +2132,9 @@ function doPrint(page){
   if(renderMap[page]) renderMap[page]();
 
   // Ambil konten dari xxx-content (bersih, tanpa page-hdr)
-  // Mapping fallback ID untuk laporan yang pakai ID berbeda
-  var idFallback={lrc:'lr-content',akc:'ak-content',bukubesar:'bb-content',jurnalumum:'ju-content'};
-  var contentId=page+'-content';
+  var idMap={labarugi:'lr-content',arukas:'ak-content',bukubesar:'bb-content',jurnalumum:'ju-content'};
+  var contentId=idMap[page]||(page+'-content');
   var el=document.getElementById(contentId);
-  // Jika kosong, coba ID alternatif
-  if(!el || el.innerHTML.trim().length<10){
-    var altId=idFallback[page];
-    if(altId){ el=document.getElementById(altId); }
-  }
   var content=el?el.innerHTML:'';
 
   // Fallback khusus ikhtisar
@@ -3092,7 +3088,7 @@ if(document.readyState==='loading'){
 <div class="setup-overlay" id="setup-overlay">
   <div class="auth-pattern"></div>
   <div class="auth-card">
-    <img id="app-logo-img" src="logo.png" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
+    <img id="app-logo-img" src="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
     <div class="auth-title">BUMDes Widyatama</div>
     <div class="auth-sub">Hubungkan ke Firebase Database<br>Gratis &amp; langsung jalan tanpa konfigurasi rumit</div>
     <div class="setup-step"><b>1.</b> Buka <b>console.firebase.google.com</b> → buat project baru</div>
@@ -3167,7 +3163,7 @@ if(document.readyState==='loading'){
 <div class="login-overlay" id="login-overlay" style="display:none">
   <div class="auth-pattern"></div>
   <div class="auth-card">
-    <img id="app-logo-img" src="logo.png" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
+    <img id="app-logo-img" src="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
     <div class="auth-title">BUMDes Widyatama</div>
     <div class="auth-sub">Sistem Akuntansi Keuangan 2026<br>Masuk untuk melanjutkan</div>
     <div class="auth-divider"></div>
