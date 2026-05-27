@@ -1608,7 +1608,7 @@ function renderLRC(f){
     }
   }
 
-  document.getElementById('lr-content').innerHTML=`<div class="card">${kop('LAPORAN LABA RUGI',sub,nomor)}
+  document.getElementById('lrc-content').innerHTML=`<div class="card">${kop('LAPORAN LABA RUGI',sub,nomor)}
   <div class="ls">I. PENDAPATAN USAHA</div>
   ${pURows}
   <div class="lr lt ltg">TOTAL PENDAPATAN USAHA<span style="font-family:var(--mono)">${fmt(L.tp)}</span></div>
@@ -1658,7 +1658,7 @@ function renderAKC(f){
   }
   var padesRow=L.pades>0?'<div class="lr"><span>&nbsp;&nbsp;'+noUrut2+'. Setor PADes ke Kas Desa</span><span style="color:var(--red);font-family:var(--mono)">('+fmt(L.pades)+')</span></div>':'';
 
-  document.getElementById('ak-content').innerHTML=`<div class="card">${kop('LAPORAN ARUS KAS - Metode Langsung',sub)}
+  document.getElementById('akc-content').innerHTML=`<div class="card">${kop('LAPORAN ARUS KAS - Metode Langsung',sub)}
   <div class="ls">A. ARUS KAS DARI AKTIVITAS OPERASI</div>
   <div class="lss">Penerimaan</div>
   ${pRows}
@@ -2129,8 +2129,8 @@ function doPrint(page){
   };
   if(renderMap[page]) renderMap[page]();
 
-  // Ambil konten - mapping ID yang benar
-  var idMap={lrc:'lr-content',akc:'ak-content',bukubesar:'bb-content',jurnalumum:'ju-content'};
+  // Ambil konten dari content div
+  var idMap={bukubesar:'bb-content',jurnalumum:'ju-content'};
   var contentId=idMap[page]||(page+'-content');
   var el=document.getElementById(contentId);
   var content=el?el.innerHTML:'';
