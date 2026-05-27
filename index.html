@@ -1226,7 +1226,7 @@ function calc(fb){
 function kop(judul, sub, noDok=''){
   const p=DB.p;
   return`<div class="kop">
-    <img id="app-logo-img" src="" class="kop-logo-img" style="width:68px;height:68px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px;background:#000;" alt="Logo BUMDes Widyatama">
+    <img src="${LOGO_SRC}" class="kop-logo-img" style="width:68px;height:68px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px;" alt="Logo">
     <div class="kopn">BADAN USAHA MILIK DESA (BUMDes)</div>
     <div class="kopn" style="font-size:18px;color:var(--teal)">${p.nama||'WIDYATAMA'}</div>
     <div class="kopa">Desa ${p.desa} &middot; Kecamatan ${p.kec} &middot; Kabupaten ${p.kab} &middot; Provinsi Jawa Tengah</div>
@@ -1235,8 +1235,9 @@ function kop(judul, sub, noDok=''){
     ${noDok?`<div><span class="nomor-dok">${noDok}</span></div>`:''}
   </div>`;
 }
-function ttd(){
+function ttd(withKades){
   const p=DB.p;
+  var showKades=(withKades===undefined)?true:!!withKades;
   return`<div class="ttdw">
     <div class="ttdkota">${p.desa}, ${todayIndo()}</div>
     <div class="ttdgrid">
@@ -1253,12 +1254,12 @@ function ttd(){
         <div class="ttdnip">Bendahara</div>
       </div>
     </div>
-    <div class="ttdkdbox">
+    ${showKades?`<div class="ttdkdbox">
       <div class="ttdlbl" style="font-size:11px;color:var(--ink3)">Mengetahui,<br><strong>Kepala Desa ${p.desa||''}</strong></div>
       <div class="ttdsp"></div>
       <div class="ttdname">${p.kd||'_______________'}</div>
       <div class="ttdnip">Kepala Desa</div>
-    </div>
+    </div>`:''}
   </div>`;
 }
 
@@ -1572,7 +1573,7 @@ function renderNeraca(){
         : '<strong>Perhatian:</strong> Selisih <strong style=\'font-family:var(--mono)\'>' + fmt(Math.abs(totalAset-ekuitas)) + '</strong> - ' + (totalAset>ekuitas ? 'Total Aset lebih besar. Kemungkinan ada laba berjalan yang belum disesuaikan, atau data Pengaturan perlu diperbarui.' : 'Total Ekuitas lebih besar. Periksa nilai Laba Ditahan di Pengaturan.')}
     </span>
   </div>
-  </div>${ttd()}</div>`;
+  </div>${ttd(true)}</div>`;
 }
 
 function renderLR(){
@@ -1619,7 +1620,7 @@ function renderLRC(f){
   <div class="lr"><span>PADes ke Kas Desa (${pct}% x Laba)</span><span style="font-family:var(--mono)">${fmt(pades)}</span></div>
   <div class="lr lt ltg" style="margin-top:8px;font-size:13px">LABA / (RUGI) BERSIH SEBELUM PADes<span style="font-family:var(--mono)">${fmt(L.laba)}</span></div>
   <div class="lr lt ltb" style="font-size:13px">LABA / (RUGI) BERSIH SETELAH PADes<span style="font-family:var(--mono)">${fmt(L.laba-pades)}</span></div>
-  ${ttd()}</div>`;
+  ${ttd(true)}</div>`;
 }
 
 
@@ -1677,7 +1678,7 @@ function renderAKC(f){
     <div class="lr" style="border-bottom:1px solid rgba(255,255,255,.15);color:#fff"><span>Kenaikan / (Penurunan) Kas Bersih</span><span style="font-family:var(--mono);color:${net>=0?'#2ECC71':'#E74C3C'}">${fmt(net)}</span></div>
     <div class="lr" style="color:#fff;font-weight:700;font-size:13.5px"><span>SALDO KAS AKHIR TAHUN / PERIODE</span><span style="font-family:var(--mono);color:var(--teal3)">${fmt(sAkhir)}</span></div>
   </div>
-  ${ttd()}</div>`;
+  ${ttd(false)}</div>`;
 }
 
 
@@ -1702,7 +1703,7 @@ function renderEkuitas(){
   <div class="lr"><span>c. Dikurangi: Distribusi PADes (${pct}%)</span><span style="color:var(--red);font-family:var(--mono)">(${fmt(pades)})</span></div>
   <div class="lr lt">JUMLAH PERUBAHAN EKUITAS<span style="font-family:var(--mono)">${fmt(L.laba-pades+L.modalIn)}</span></div>
   <div class="lr lt ltg" style="margin-top:4px;font-size:13.5px">SALDO EKUITAS AKHIR TAHUN<span style="font-family:var(--mono)">${fmt(ekAkhir)}</span></div>
-  ${ttd()}</div>`;
+  ${ttd(false)}</div>`;
 }
 
 // ==================================================
@@ -1720,7 +1721,7 @@ function renderHasilUsaha(){
   <tbody>${phuList.map((ph,i)=>`<tr><td style="text-align:center;font-weight:700">${i+1}</td><td style="font-weight:${i===0?700:400}">${ph.l}${i===0?' <span class="badge bm" style="font-size:9px">PADes</span>':''}</td><td style="text-align:right;font-family:var(--mono)">${ph.p.toFixed(2)}%</td><td style="text-align:right;font-weight:700;font-family:var(--mono);color:${i===0?'var(--teal)':'var(--ink)'}">${fmt(dasar*ph.p/100)}</td><td style="font-size:11px;color:var(--ink3)">${['Disetor ke Kas Desa (wajib)','Dana Cadangan Modal BUMDes','Dana Pengembangan Unit Usaha','Insentif Pengurus BUMDes','Dana Operasional Rutin','Kegiatan Sosial / CSR'][i]||''}</td></tr>`).join('')}</tbody>
   <tfoot><tr class="tfoot-row"><td colspan="2" style="font-weight:700">TOTAL</td><td style="text-align:right;font-family:var(--mono)">${phuList.reduce((s,ph)=>s+ph.p,0).toFixed(2)}%</td><td style="text-align:right;font-family:var(--mono)">${fmt(dasar)}</td><td></td></tr></tfoot></table></div>
   <div style="margin-top:14px" class="info-box"><strong>Dasar Hukum:</strong> Pasal 15 Kepmendes PDTT No. 136 Tahun 2022 - PADes minimal 25% dari laba bersih wajib disetor ke Kas Desa.</div>
-  ${ttd()}</div>`;
+  ${ttd(false)}</div>`;
 }
 
 // ==================================================
@@ -1929,7 +1930,7 @@ function renderCaLK(){
     </div>
   </div>
 
-  ${ttd()}</div>`;
+  ${ttd(true)}</div>`;
 }
 
 // ==================================================
@@ -2652,7 +2653,7 @@ function renderRekap(){
     +'</tr></thead>'
     +'<tbody>'+unitRows+'</tbody>'
     +'</table>'
-    +'</div></div>';
+    +'</div></div>'+ttd(false);
 }
 
 function renderPengaturan(){
@@ -3088,7 +3089,7 @@ if(document.readyState==='loading'){
 <div class="setup-overlay" id="setup-overlay">
   <div class="auth-pattern"></div>
   <div class="auth-card">
-    <img id="app-logo-img" src="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
+    <img id="app-logo-img" src="logo.png" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
     <div class="auth-title">BUMDes Widyatama</div>
     <div class="auth-sub">Hubungkan ke Firebase Database<br>Gratis &amp; langsung jalan tanpa konfigurasi rumit</div>
     <div class="setup-step"><b>1.</b> Buka <b>console.firebase.google.com</b> → buat project baru</div>
@@ -3163,7 +3164,7 @@ if(document.readyState==='loading'){
 <div class="login-overlay" id="login-overlay" style="display:none">
   <div class="auth-pattern"></div>
   <div class="auth-card">
-    <img id="app-logo-img" src="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
+    <img id="app-logo-img" src="logo.png" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 12px;background:#000;" alt="Logo BUMDes">
     <div class="auth-title">BUMDes Widyatama</div>
     <div class="auth-sub">Sistem Akuntansi Keuangan 2026<br>Masuk untuk melanjutkan</div>
     <div class="auth-divider"></div>
